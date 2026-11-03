@@ -12,7 +12,7 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
-from contribution_analytics.analytics import activity_by_period, commit_intervals, commit_timing, repository_colors
+from contribution_analytics.analytics import activity_by_period, commit_intervals, commit_timing, repository_colors, repository_comparison
 from contribution_analytics.branding import resolve_branding
 from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import load_data
@@ -609,19 +609,7 @@ elif page in {"Pull Requests", "Issues"}:
     unavailable(page)
 elif page == "Repository Comparison":
     st.title("Repository comparison")
-    rows = []
-    for repo in sorted(filtered.repo.unique()):
-        rows.append(
-            {
-                "repo": repo,
-                **summary(
-                    filtered[filtered.repo == repo],
-                    filtered_files[filtered_files.repo == repo],
-                    filtered_loc[filtered_loc.repo == repo],
-                ),
-            }
-        )
-    comparison = pd.DataFrame(rows)
+    comparison = repository_comparison(filtered, filtered_loc, TIMEZONE)
     chart(
         px.bar(
             comparison.melt(id_vars="repo", value_vars=["commits", "contributors", "loc", "churn"]),
