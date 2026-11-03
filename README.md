@@ -8,7 +8,9 @@
   
 ---
 
-Local-first Streamlit dashboard for contribution, source-code, and historical Git analytics across configured repositories. It never writes to source repositories or GitHub.
+GitHub Contribution Analytics is a local-first Streamlit dashboard for exploring contribution activity, source-code evolution, and Git history across any configured repositories. Analysis is strictly read-only: it never changes source repositories, rewrites Git history, or writes data to GitHub.
+
+Use the dashboard to examine unique commits, contributors, activity calendars and streaks, additions, deletions, churn, languages, files, modules, and current lines of code. Interactive filters support repository, contributor, date-range, and bot selection, while CSV, JSON, HTML, PNG, and ZIP exports make it easy to share or retain the resulting analysis.
 
 ---
 
