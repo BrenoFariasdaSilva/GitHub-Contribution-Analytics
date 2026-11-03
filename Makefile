@@ -1,6 +1,6 @@
 PYTHON := .venv/bin/python
 PIP := .venv/bin/pip
-STREAMLIT := .venv/bin/streamlit
+STREAMLIT := .venv/bin/python -m streamlit
 
 .PHONY: venv install analyze export test lint run diagnostics clean
 

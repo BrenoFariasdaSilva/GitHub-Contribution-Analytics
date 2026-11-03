@@ -56,7 +56,7 @@ python3 -m venv .venv
 .venv/bin/python main.py diagnostics
 .venv/bin/python main.py analyze --repo all
 .venv/bin/python main.py export --all
-.venv/bin/streamlit run app.py
+.venv/bin/python -m streamlit run app.py
 ```
 
 ## Commands
