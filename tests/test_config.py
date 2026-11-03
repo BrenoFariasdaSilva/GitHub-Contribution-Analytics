@@ -26,3 +26,11 @@ def test_load_config_rejects_missing_repository_paths(tmp_path: Path) -> None:
     path.write_text("repositories:\n  sample: {}\n", encoding="utf-8")
     with pytest.raises(ValueError, match="requires named repositories"):
         load_config(path)
+
+
+def test_load_config_rejects_invalid_timezone(tmp_path: Path) -> None:
+    """Timezone values are validated before analytics begins."""
+    path = tmp_path / "settings.yaml"
+    path.write_text("repositories:\n  sample:\n    path: /tmp/sample\ntimezone: nowhere/invalid\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="Invalid timezone"):
+        load_config(path)

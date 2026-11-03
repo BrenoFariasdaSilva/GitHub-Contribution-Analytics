@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
 
@@ -28,5 +29,9 @@ def load_config(path: str | Path) -> dict[str, Any]:
     config.setdefault("exclude_dirs", [])
     config.setdefault("exclude_files", [])
     config.setdefault("bot_patterns", [])
-    config.setdefault("display_name", os.environ.get("CONTRIBUTION_ANALYTICS_DISPLAY_NAME", ""))
+    try:
+        ZoneInfo(str(config["timezone"]))
+    except ZoneInfoNotFoundError as error:
+        raise ValueError(f"Invalid timezone: {config['timezone']}") from error
+    config.setdefault("display_name", "")
     return config

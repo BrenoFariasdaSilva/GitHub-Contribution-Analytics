@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from dataclasses import dataclass
@@ -31,10 +32,23 @@ def repository_name(remote_url: str) -> str | None:
     return candidate or None
 
 
+ACRONYMS = {
+    "api": "API",
+    "cli": "CLI",
+    "csv": "CSV",
+    "github": "GitHub",
+    "html": "HTML",
+    "json": "JSON",
+    "loc": "LoC",
+    "png": "PNG",
+    "yaml": "YAML",
+}
+
+
 def display_name(value: str) -> str:
-    """Turn a repository-style name into a readable display name."""
+    """Turn a repository-style name into readable text while preserving acronyms."""
     words = re.sub(r"[_-]+", " ", value).strip()
-    return re.sub(r"\s+", " ", words).title()
+    return " ".join(ACRONYMS.get(word.lower(), word.capitalize()) for word in re.split(r"\s+", words) if word)
 
 
 def filename_slug(value: str) -> str:
@@ -56,8 +70,20 @@ def origin_url(root: Path) -> str | None:
     return completed.stdout.strip() if completed.returncode == 0 else None
 
 
-def resolve_branding(root: Path, configured_name: str | None = None) -> Branding:
-    """Resolve branding from override, app remote, root directory, then fallback."""
-    source = configured_name or repository_name(origin_url(root) or "") or root.name or "Contribution Analytics"
+def nonempty(value: str | None) -> str | None:
+    """Return a trimmed value only when it contains visible characters."""
+    return value.strip() if value and value.strip() else None
+
+
+def resolve_branding(root: Path, runtime_name: str | None = None, configured_name: str | None = None) -> Branding:
+    """Resolve branding from runtime, environment, YAML, origin, directory, then fallback."""
+    source = (
+        nonempty(runtime_name)
+        or nonempty(os.environ.get("CONTRIBUTION_ANALYTICS_DISPLAY_NAME"))
+        or nonempty(configured_name)
+        or repository_name(origin_url(root) or "")
+        or nonempty(root.name)
+        or "Contribution Analytics"
+    )
     name = display_name(source)
     return Branding(display_name=name, slug=filename_slug(name))

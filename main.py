@@ -22,6 +22,11 @@ def settings(args: argparse.Namespace) -> dict[str, object]:
     return load_config(config_path(args.config, ROOT))
 
 
+def branding(args: argparse.Namespace) -> object:
+    """Resolve the identity shared by CLI output and generated exports."""
+    return resolve_branding(ROOT, getattr(args, "display_name", None), str(settings(args)["display_name"]))
+
+
 def analyze(args: argparse.Namespace) -> None:
     """Analyze configured repositories and save a local cache."""
     config = settings(args)
@@ -52,8 +57,7 @@ def analyze(args: argparse.Namespace) -> None:
 def export(args: argparse.Namespace) -> None:
     """Generate public-facing exports from the local analysis cache."""
     commits, files, loc, metadata = load_data(ROOT / "data" / "processed")
-    config = settings(args)
-    paths = export_all(ROOT, commits, files, loc, metadata, resolve_branding(ROOT, str(config["display_name"])))
+    paths = export_all(ROOT, commits, files, loc, metadata, branding(args))
     print(f"Generated {len(paths)} exports")
 
 
@@ -75,10 +79,14 @@ def tests(_: argparse.Namespace) -> None:
 
 def main() -> None:
     """Parse CLI arguments and dispatch the chosen action."""
-    parser = argparse.ArgumentParser(description=f"{resolve_branding(ROOT).title} local-first analytics")
+    default_name = str(load_config(config_path(None, ROOT))["display_name"])
+    parser = argparse.ArgumentParser(
+        description=f"{resolve_branding(ROOT, configured_name=default_name).title} local-first analytics"
+    )
     parser.add_argument(
         "--config", help="Path to YAML settings; defaults to CONTRIBUTION_ANALYTICS_CONFIG or config/settings.yaml"
     )
+    parser.add_argument("--display-name", help="Override the resolved application display name for this invocation")
     actions = parser.add_subparsers(dest="action", required=True)
     analyze_parser = actions.add_parser("analyze", help="Analyze configured Git repositories")
     analyze_parser.add_argument("--repo", default="all", help="Configured repository name or 'all'")

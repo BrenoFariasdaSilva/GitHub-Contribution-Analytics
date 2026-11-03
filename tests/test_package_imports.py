@@ -16,4 +16,4 @@ def test_cli_help_uses_dynamic_application_identity() -> None:
     """The CLI imports successfully and exposes its dynamic title."""
     root = Path(__file__).resolve().parents[1]
     result = subprocess.run([sys.executable, "main.py", "--help"], cwd=root, capture_output=True, text=True, check=True)
-    assert "Github Contribution Analytics" in result.stdout
+    assert "GitHub Contribution Analytics" in result.stdout
