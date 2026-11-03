@@ -44,16 +44,19 @@ from contribution_analytics.metrics import summary
 
 The quickest path creates a virtual environment, installs dependencies, refreshes local Git analysis and exports, then starts the dashboard:
 
-  * Using ShellScript:
-      ```bash
-      chmod +x install.sh
-      sudo ./install.sh
-      ```  
+```bash
+make run
+```
 
-## Run Programing Language Code:
+Or run the steps directly:
 
 ```bash
-# Command here 
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python main.py diagnostics
+.venv/bin/python main.py analyze --repo all
+.venv/bin/python main.py export --all
+.venv/bin/streamlit run app.py
 ```
 
 ### Dependencies
