@@ -46,7 +46,7 @@ cd GitHub-Contribution-Analytics
 cp config/settings.example.yaml config/settings.yaml
 ```
 
-Edit `config/settings.yaml` with arbitrary repository names and paths, exact identity aliases, exclusions, timezone, bot patterns, and feature switches. This local file is ignored by Git. `CONTRIBUTION_ANALYTICS_CONFIG` can select another local settings file, while `CONTRIBUTION_ANALYTICS_DISPLAY_NAME` overrides the title derived from this application's Git origin.
+Edit `config/settings.yaml` with arbitrary repository names and paths, exact identity aliases, exclusions, timezone, bot patterns, and feature switches. This local file is ignored by Git. Display-name precedence is runtime `--display-name`, nonempty `CONTRIBUTION_ANALYTICS_DISPLAY_NAME`, nonempty YAML `display_name`, Git origin, then the application directory. All calendar metrics use the validated `timezone` setting.
 
 The distribution is `github-contribution-analytics`; Python integrations import the generic package namespace:
 
@@ -90,7 +90,7 @@ python3 -m venv .venv
 
 ## Dashboard
 
-Pages cover overview, a project-derived contribution calendar, contributors, commits, current LoC and historical churn, ownership caveats, PRs, issues, repository comparison, languages, files/modules, collaboration, historical trends, data exploration, exports, and source configuration. Charts can be filtered by repository, contributor, date range, and bot inclusion.
+Pages cover repository activity, contributor insights, code evolution, commit patterns, a project-derived contribution calendar, current LoC and historical churn, repository comparison, languages, files/modules, collaboration, historical trends, exports, and source configuration. Charts can be filtered by repository, contributor, date range, and bot inclusion; repository colors are stable and derived from each configured name.
 
 Every chart has a high-resolution PNG download option. **Prepare all PNG assets (ZIP)** renders and packages the available local-data charts for the selected filters.
 
@@ -102,6 +102,8 @@ Every chart has a high-resolution PNG download option. **Prepare all PNG assets 
 - **Activity calendar** — local Git authored commits in the configured timezone; it is not GitHub's official contribution calendar.
 - **Identity** — author and committer are retained separately. Contributors are canonicalized only through exact email/name aliases in `config/settings.yaml`.
 - **Ownership** — disabled by default. Future Git blame data represents surviving-line attribution, not responsibility or quality.
+- **Commit timing** — local author timestamp distributions and intervals; they do not measure time spent programming.
+- **Repository comparison** — filtered commit, contributor, activity-day, LoC, churn, and Conventional Commit adoption figures; higher values are not quality rankings.
 
 ## Privacy and GitHub API
 
