@@ -43,12 +43,6 @@ Use the dashboard to examine unique commits, contributors, activity calendars an
 - Export CSV, JSON, an HTML executive summary, and high-resolution chart PNGs.
 - Work fully offline for Git-based analytics; GitHub PR, issue, and review data is optional.
 
-## Requirements
-
-- Python 3.12 or later
-- Git
-- One or more local Git repositories to analyze
-
 ## Setup
 
 Clone the repository and create local configuration:
@@ -67,6 +61,12 @@ The distribution is `github-contribution-analytics`; Python integrations import 
 from contribution_analytics.git import analyze_repo
 from contribution_analytics.metrics import summary
 ```
+
+## Requirements
+
+- Python 3.12 or later
+- Git
+- One or more local Git repositories to analyze
 
 ## Install and run
 
