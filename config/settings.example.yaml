@@ -1,0 +1,16 @@
+# Copy to config/settings.yaml and replace placeholder paths for your machine.
+# CONTRIBUTION_ANALYTICS_CONFIG selects an alternate settings file.
+# CONTRIBUTION_ANALYTICS_DISPLAY_NAME overrides the display name.
+repositories:
+  example-project:
+    path: /path/to/local/repository
+    github: OWNER/REPOSITORY
+display_name: ""
+timezone: America/Sao_Paulo
+github_enabled: true
+ownership_enabled: false
+exclude_dirs: [node_modules, .git, dist, build, coverage, .next, .venv, venv, vendor, generated]
+exclude_files: [yarn.lock, package-lock.json, pnpm-lock.yaml]
+bot_patterns: ['[bot]', 'bot@', 'dependabot']
+# Exact author email/name aliases only. Do not merge identities by similarity.
+aliases: {}
