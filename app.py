@@ -12,11 +12,15 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
+from contribution_analytics.analytics import repository_colors
 from contribution_analytics.branding import resolve_branding
+from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import load_data
 from contribution_analytics.metrics import commit_daily, contribution_streaks, filter_commits, github_status, summary
 
-BRANDING = resolve_branding(ROOT)
+CONFIG = load_config(config_path(None, ROOT))
+TIMEZONE = str(CONFIG["timezone"])
+BRANDING = resolve_branding(ROOT, configured_name=str(CONFIG["display_name"]))
 st.set_page_config(page_title=BRANDING.title, page_icon="📊", layout="wide")
 
 
@@ -110,10 +114,10 @@ with st.sidebar:
     if len(dates) != 2:
         st.stop()
 
-filtered = filter_commits(commits, selected_repos, selected_people or None, dates[0], dates[1], human_only)
+filtered = filter_commits(commits, selected_repos, selected_people if selected_people else None, dates[0], dates[1], human_only)
 filtered_files = file_changes[file_changes.sha.isin(filtered.sha)]
 filtered_loc = loc[loc.repo.isin(selected_repos)]
-color = {"backend": "#00A6A6", "frontend": "#F28E2B"}
+color = repository_colors(available_repos)
 
 
 def chart(fig, title: str) -> None:
@@ -133,7 +137,7 @@ def chart(fig, title: str) -> None:
 
 def period_strings(values: pd.Series, frequency: str) -> pd.Series:
     """Format periods in project timezone without pandas timezone-loss warnings."""
-    return values.dt.tz_convert("America/Sao_Paulo").dt.tz_localize(None).dt.to_period(frequency).astype(str)
+    return values.dt.tz_convert(TIMEZONE).dt.tz_localize(None).dt.to_period(frequency).astype(str)
 
 
 def plotly_theme() -> str:
@@ -160,7 +164,7 @@ def all_figures(
 ) -> list[tuple[str, object]]:
     """Build every local-data visualization for a single ZIP export."""
     figures: list[tuple[str, object]] = []
-    daily = commit_daily(commits_data)
+    daily = commit_daily(commits_data, TIMEZONE)
     weekly = (
         commits_data.assign(week=period_strings(commits_data.author_date, "W"))
         .groupby("week", as_index=False)
@@ -179,7 +183,7 @@ def all_figures(
         px.bar(ranks, x="contributor", y="commits", color="churn", color_continuous_scale="Teal"),
     )
     calendar_year = int(commits_data.author_date.dt.year.max())
-    calendar_daily = commit_daily(commits_data[commits_data.author_date.dt.year == calendar_year])
+    calendar_daily = commit_daily(commits_data[commits_data.author_date.dt.year == calendar_year], TIMEZONE)
     grid = calendar_daily.assign(
         day=pd.to_datetime(calendar_daily.date),
         weekday=lambda x: x.day.dt.weekday,
@@ -248,7 +252,7 @@ def all_figures(
     )
     add_figure(
         figures,
-        "Backend-frontend commit trends",
+        "Commit activity by repository",
         px.bar(monthly_repo, x="month", y="commits", color="repo", barmode="group", color_discrete_map=color),
     )
     add_figure(figures, "Commit file-change distribution", px.histogram(commits_data, x="files_changed", nbins=30))
@@ -395,6 +399,11 @@ def unavailable(kind: str) -> None:
     st.info(f"{kind} analytics unavailable. {github_status()['reason']}")
 
 
+if not selected_repos:
+    st.warning("No repositories selected. Choose at least one repository to view analytics.")
+    st.stop()
+
+
 if page == "Overview":
     st.title(BRANDING.title)
     values = summary(filtered, filtered_files, filtered_loc)
@@ -412,7 +421,7 @@ if page == "Overview":
         columns = st.columns(4)
         for column, (label, value) in zip(columns, cards[row : row + 4]):
             column.metric(label, f"{value:,}" if isinstance(value, int) else value)
-    daily = commit_daily(filtered)
+    daily = commit_daily(filtered, TIMEZONE)
     chart(px.line(daily, x="date", y="commits", markers=True), "Commit activity by day")
     weekly = (
         filtered.assign(week=period_strings(filtered.author_date, "W"))
@@ -433,7 +442,7 @@ elif page == "Contributions Calendar":
     st.title("Project-derived activity calendar")
     st.caption("Not GitHub official contribution counting. Counts selected local Git authored commits.")
     year = st.selectbox("Year", sorted(filtered.author_date.dt.year.unique(), reverse=True))
-    daily = commit_daily(filtered[filtered.author_date.dt.year == year])
+    daily = commit_daily(filtered[filtered.author_date.dt.year == year], TIMEZONE)
     grid = daily.assign(
         day=pd.to_datetime(daily.date),
         weekday=lambda x: x.day.dt.weekday,
@@ -498,7 +507,7 @@ elif page == "Git Commits":
     )
     chart(
         px.bar(monthly, x="month", y="commits", color="repo", barmode="group", color_discrete_map=color),
-        "Backend/frontend commit trends",
+        "Commit activity by repository",
     )
     chart(px.histogram(filtered, x="files_changed", nbins=30), "Commit file-change distribution")
     merge_data = (
