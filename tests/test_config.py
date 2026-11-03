@@ -1,0 +1,28 @@
+"""Tests for safe configuration loading."""
+
+from pathlib import Path
+
+import pytest
+
+from contribution_analytics.config import config_path, load_config
+
+
+def test_config_path_prefers_explicit_value(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """An explicit CLI path wins over the environment setting."""
+    monkeypatch.setenv("CONTRIBUTION_ANALYTICS_CONFIG", "environment.yaml")
+    assert config_path("explicit.yaml", tmp_path) == Path("explicit.yaml")
+
+
+def test_load_config_adds_safe_defaults(tmp_path: Path) -> None:
+    """A minimal valid configuration receives non-sensitive defaults."""
+    path = tmp_path / "settings.yaml"
+    path.write_text("repositories:\n  sample:\n    path: /tmp/sample\n", encoding="utf-8")
+    assert load_config(path)["timezone"] == "America/Sao_Paulo"
+
+
+def test_load_config_rejects_missing_repository_paths(tmp_path: Path) -> None:
+    """Repository entries require an explicit local path."""
+    path = tmp_path / "settings.yaml"
+    path.write_text("repositories:\n  sample: {}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="requires named repositories"):
+        load_config(path)
