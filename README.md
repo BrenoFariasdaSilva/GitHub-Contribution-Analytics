@@ -33,20 +33,16 @@ cp config/settings.example.yaml config/settings.yaml
 
 Edit `config/settings.yaml` with arbitrary repository names and paths, exact identity aliases, exclusions, timezone, bot patterns, and feature switches. This local file is ignored by Git. `CONTRIBUTION_ANALYTICS_CONFIG` can select another local settings file, while `CONTRIBUTION_ANALYTICS_DISPLAY_NAME` overrides the title derived from this application's Git origin.
 
-## Installation:
+The distribution is `github-contribution-analytics`; Python integrations import the generic package namespace:
 
-* Programing Language:
+```python
+from contribution_analytics.git import analyze_repo
+from contribution_analytics.metrics import summary
+```
 
-  * Manually:
-      ```bash
-      # Programing Language:
-      sudo apt install program-language -y
-      ```
+## Install and run
 
-  * Using Makefile:
-      ```bash
-      make install
-      ```
+The quickest path creates a virtual environment, installs dependencies, refreshes local Git analysis and exports, then starts the dashboard:
 
   * Using ShellScript:
       ```bash
