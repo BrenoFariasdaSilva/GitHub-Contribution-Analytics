@@ -69,116 +69,49 @@ python3 -m venv .venv
 
 ## Dashboard
 
-### Dataset - Optional
+Pages cover overview, a project-derived contribution calendar, contributors, commits, current LoC and historical churn, ownership caveats, PRs, issues, repository comparison, languages, files/modules, collaboration, historical trends, data exploration, exports, and source configuration. Charts can be filtered by repository, contributor, date range, and bot inclusion.
 
-1. Download the dataset from [WEBSITE-HERE]() and place it in this project directory `(/Template-Project)` and run the following command:
+Every chart has a high-resolution PNG download option. **Prepare all PNG assets (ZIP)** renders and packages the available local-data charts for the selected filters.
 
-   ```bash
-   make dataset
-   ```
+## Metric definitions
 
-## Usage
+- **Unique commits** — SHA-deduplicated commits reachable from all available refs.
+- **Historical additions, deletions, and churn** — Git `--numstat` for ordinary commits only; merge commits are excluded to avoid misleading churn.
+- **Current LoC** — physical lines in Git-tracked, readable source files after configured exclusions; it is not historical additions.
+- **Activity calendar** — local Git authored commits in the configured timezone; it is not GitHub's official contribution calendar.
+- **Identity** — author and committer are retained separately. Contributors are canonicalized only through exact email/name aliases in `config/settings.yaml`.
+- **Ownership** — disabled by default. Future Git blame data represents surviving-line attribution, not responsibility or quality.
 
-In order to run the project, run the following command:
+## Privacy and GitHub API
+
+Git commands are read-only, generated data stays in this project, and no tokens are stored or printed. Git-only analysis works fully offline. Local settings, caches, and generated CSV/JSON/HTML/PNG files are ignored. Public JSON metadata excludes absolute local repository paths, and report text is HTML-escaped.
+
+Private-repository PR, issue, review, and lifecycle metrics require a valid GitHub CLI session:
 
 ```bash
-make run
+gh auth login -h github.com
 ```
 
-## Results - Optional
+If authentication or collection is unavailable, those metrics are shown as unavailable rather than as zero or inferred data.
 
-Discuss the results obtained in the project.
+## Limitations
 
-## How to Cite?
+History is collected in bulk with one `git log` call per repository and cached in `data/processed`. Current LoC skips binary and unreadable tracked files. Rename detection is limited to Git's `numstat` output. Branch lifetime, GitHub reviews, issues, PRs, and blame ownership are never inferred when their data is absent. Shallow repositories are flagged in metadata.
 
-If you use the Repository-Name in your research, please cite it using the following BibTeX entry:
+## Development checks
 
-```
-@misc{softwareRepository-Name:2024,
-  title = {Repository-Name: Project-Description},
-  author = {Breno Farias da Silva},
-  year = {2024},
-  howpublished = {https://github.com/BrenoFariasdaSilva/Repository-Name},
-  note = {Accessed on September 11, 2024}
-}
+```bash
+.venv/bin/python -m pytest -q
+.venv/bin/python -m ruff check .
+.venv/bin/python -m ruff format --check .
 ```
 
-Additionally, a `main.bib` file is available in the root directory of this repository, in which contains the BibTeX entry for this project.
-
-If you find this repository valuable, please don't forget to give it a ⭐ to show your support! Contributions are highly encouraged, whether by creating issues for feedback or submitting pull requests (PRs) to improve the project. For details on how to contribute, please refer to the [Contributing](#contributing) section below.
-
-Thank you for your support and for recognizing the contribution of this tool to your work!
+The tests also enforce docstrings for every function in `app.py`, `main.py`, `src/`, and `tests/`.
 
 ## Contributing
 
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**. If you have suggestions for improving the code, your insights will be highly welcome.
-In order to contribute to this project, please follow the guidelines below or read the [CONTRIBUTING.md](CONTRIBUTING.md) file for more details on how to contribute to this project, as it contains information about the commit standards and the entire pull request process.
-Please follow these guidelines to make your contributions smooth and effective:
-
-1. **Set Up Your Environment**: Ensure you've followed the setup instructions in the [Setup](#setup) section to prepare your development environment.
-
-2. **Make Your Changes**:
-   - **Create a Branch**: `git checkout -b feature/YourFeatureName`
-   - **Implement Your Changes**: Make sure to test your changes thoroughly.
-   - **Commit Your Changes**: Use clear commit messages, for example:
-     - For new features: `git commit -m "FEAT: Add some AmazingFeature"`
-     - For bug fixes: `git commit -m "FIX: Resolve Issue #123"`
-     - For documentation: `git commit -m "DOCS: Update README with new instructions"`
-     - For refactorings: `git commit -m "REFACTOR: Enhance component for better aspect"`
-     - For snapshots: `git commit -m "SNAPSHOT: Temporary commit to save the current state for later reference"`
-   - See more about crafting commit messages in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
-
-3. **Submit Your Contribution**:
-   - **Push Your Changes**: `git push origin feature/YourFeatureName`
-   - **Open a Pull Request (PR)**: Navigate to the repository on GitHub and open a PR with a detailed description of your changes.
-
-4. **Stay Engaged**: Respond to any feedback from the project maintainers and make necessary adjustments to your PR.
-
-5. **Celebrate**: Once your PR is merged, celebrate your contribution to the project!
-
-## Collaborators
-
-We thank the following people who contributed to this project:
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="#" title="defina o titulo do link">
-        <img src="https://github.com/BrenoFariasdaSilva.png" width="100px;" alt="My Profile Picture"/><br>
-        <sub>
-          <b>Breno Farias da Silva</b>
-        </sub>
-      </a>
-    </td>
-    <td align="center">
-      <a href="#" title="defina o titulo do link">
-        <img src="https://github.com/BrenoFariasdaSilva.png" width="100px;" alt="My Profile Picture"/><br>
-        <sub>
-          <b>Breno Farias da Silva</b>
-        </sub>
-      </a>
-    </td>
-    <td align="center">
-      <a href="#" title="defina o titulo do link">
-        <img src="https://github.com/BrenoFariasdaSilva.png" width="100px;" alt="My Profile Picture"/><br>
-        <sub>
-          <b>Breno Farias da Silva</b>
-        </sub>
-      </a>
-    </td>
-  </tr>
-</table>
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for branch, commit, and pull-request guidance.
 
 ## License
 
-### Apache License 2.0
-
-This project is licensed under the [Apache License 2.0](LICENSE). This license permits use, modification, distribution, and sublicense of the code for both private and commercial purposes, provided that the original copyright notice and a disclaimer of warranty are included in all copies or substantial portions of the software. It also requires a clear attribution back to the original author(s) of the repository. For more details, see the [LICENSE](LICENSE) file in this repository.
-
-### Creative Commons Zero v1.0 Universal (CC0 1.0)
-
-This project is licensed under the [Creative Commons Zero v1.0 Universal](LICENSE) (CC0 1.0) Public Domain Dedication. This means that the work is released into the public domain, allowing anyone to use, modify, distribute, and perform the work, even for commercial purposes, without asking permission and without attributing the original author(s). However, it's appreciated if you include a copy of the license or a link to it in any significant use or distribution. For more details, see the [LICENSE](LICENSE) file in this repository.
-
-### MIT License
-
-This project is licensed under the [MIT License](LICENSE). The MIT License is a permissive license that is short and to the point. It lets people do anything they want with your code as long as they provide attribution back to you and don’t hold you liable. This license allows for commercial use, modification, distribution, private use, and sublicensing. See the [LICENSE](LICENSE) file in this repository for more details.
+Distributed under the [Apache License 2.0](LICENSE).
