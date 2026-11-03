@@ -54,6 +54,7 @@ pages = [
     "Export Reports",
     "Configuration / Data Sources",
     "Repository Activity",
+    "Contributor Insights",
 ]
 available_repos = sorted(commits.repo.unique())
 available_people = sorted(commits.contributor.dropna().unique())
@@ -452,6 +453,14 @@ elif page == "Repository Activity":
     chart(px.bar(activity, x="period", y=["additions", "deletions"], barmode="group"), "Historical additions and deletions")
     timing = commit_timing(filtered, TIMEZONE)
     chart(px.density_heatmap(timing, x="hour", y="weekday", z="commits", color_continuous_scale="Blues"), "Commit timing by weekday and hour")
+elif page == "Contributor Insights":
+    st.title("Contributor insights")
+    ranking = filtered.groupby("contributor", as_index=False).agg(commits=("sha", "nunique"), first=("author_date", "min"), last=("author_date", "max"), repositories=("repo", "nunique"))
+    chart(px.bar(ranking.sort_values("commits"), x="commits", y="contributor", orientation="h", color="repositories"), "Contributor commit distribution")
+    chart(px.pie(ranking, names="contributor", values="commits"), "Contributor share of commits")
+    monthly = filtered.assign(month=period_strings(filtered.author_date, "M")).groupby(["month", "contributor"], as_index=False).agg(commits=("sha", "nunique"))
+    chart(px.area(monthly, x="month", y="commits", color="contributor"), "Contributor activity over time")
+    st.dataframe(ranking.sort_values("commits", ascending=False), width="stretch", hide_index=True)
 elif page == "Contributions Calendar":
     st.title("Project-derived activity calendar")
     st.caption("Not GitHub official contribution counting. Counts selected local Git authored commits.")
