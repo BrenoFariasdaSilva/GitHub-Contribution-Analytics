@@ -273,7 +273,7 @@ def all_figures(
     churn = (
         commits_data[~commits_data.is_merge.astype(bool)]
         .groupby(["contributor", "repo"], as_index=False)
-        .agg(additions=("additions", "sum"), deletions=("deletions", "sum"))
+        .agg(additions=("additions", "sum"), deletions=("deletions", "sum"), churn=("additions", "sum"))
     )
     add_figure(
         figures,
