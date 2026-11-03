@@ -5,15 +5,15 @@ Local-first Streamlit dashboard for contribution, source-code, and historical Gi
 
 <div align="center">
 
-![GitHub Code Size in Bytes](https://img.shields.io/github/languages/code-size/BrenoFariasdaSilva/Angular-UI-Playground)
-![GitHub Commits](https://img.shields.io/github/commit-activity/t/BrenoFariasdaSilva/Angular-UI-Playground/main)
-![GitHub Last Commit](https://img.shields.io/github/last-commit/BrenoFariasdaSilva/Angular-UI-Playground)
-![GitHub Forks](https://img.shields.io/github/forks/BrenoFariasdaSilva/Angular-UI-Playground)
-![GitHub Language Count](https://img.shields.io/github/languages/count/BrenoFariasdaSilva/Angular-UI-Playground)
-![GitHub License](https://img.shields.io/github/license/BrenoFariasdaSilva/Angular-UI-Playground)
-![GitHub Stars](https://img.shields.io/github/stars/BrenoFariasdaSilva/Angular-UI-Playground)
-![GitHub Contributors](https://img.shields.io/github/contributors/BrenoFariasdaSilva/Angular-UI-Playground)
-![wakatime](https://wakatime.com/badge/github/BrenoFariasdaSilva/Angular-UI-Playground.svg)
+![GitHub Code Size in Bytes](https://img.shields.io/github/languages/code-size/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![GitHub Commits](https://img.shields.io/github/commit-activity/t/BrenoFariasdaSilva/GitHub-Contribution-Analytics/main)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![GitHub Forks](https://img.shields.io/github/forks/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![GitHub Language Count](https://img.shields.io/github/languages/count/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![GitHub License](https://img.shields.io/github/license/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![GitHub Stars](https://img.shields.io/github/stars/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![GitHub Contributors](https://img.shields.io/github/contributors/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![wakatime](https://wakatime.com/badge/github/BrenoFariasdaSilva/GitHub-Contribution-Analytics.svg)
 
 </div>
 
