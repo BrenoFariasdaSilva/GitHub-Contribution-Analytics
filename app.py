@@ -12,7 +12,13 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
-from contribution_analytics.analytics import activity_by_period, commit_intervals, commit_timing, repository_colors, repository_comparison
+from contribution_analytics.analytics import (
+    activity_by_period,
+    commit_intervals,
+    commit_timing,
+    repository_colors,
+    repository_comparison,
+)
 from contribution_analytics.branding import resolve_branding
 from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import load_data
@@ -118,7 +124,9 @@ with st.sidebar:
     if len(dates) != 2:
         st.stop()
 
-filtered = filter_commits(commits, selected_repos, selected_people if selected_people else None, dates[0], dates[1], human_only)
+filtered = filter_commits(
+    commits, selected_repos, selected_people if selected_people else None, dates[0], dates[1], human_only
+)
 filtered_files = file_changes[file_changes.sha.isin(filtered.sha)]
 filtered_loc = loc[loc.repo.isin(selected_repos)]
 color = repository_colors(available_repos)
@@ -448,44 +456,96 @@ elif page == "Repository Activity":
     activity = activity_by_period(filtered, TIMEZONE, frequency or "W")
     st.caption(f"Author timestamps are grouped in {TIMEZONE}. A commit is not a measure of time spent programming.")
     values = summary(filtered, filtered_files, filtered_loc)
-    cards = [("Active days", filtered.author_date.dt.tz_convert(TIMEZONE).dt.date.nunique()), ("Average active day", f"{values['average_daily_commits']:.2f}"), ("Latest commit", values["last_commit"]), ("Timezone", TIMEZONE)]
+    cards = [
+        ("Active days", filtered.author_date.dt.tz_convert(TIMEZONE).dt.date.nunique()),
+        ("Average active day", f"{values['average_daily_commits']:.2f}"),
+        ("Latest commit", values["last_commit"]),
+        ("Timezone", TIMEZONE),
+    ]
     for column, (label, value) in zip(st.columns(4), cards):
         column.metric(label, value)
     chart(px.line(activity, x="period", y="commits", markers=True), "Commit activity over time")
-    chart(px.bar(activity, x="period", y=["additions", "deletions"], barmode="group"), "Historical additions and deletions")
+    chart(
+        px.bar(activity, x="period", y=["additions", "deletions"], barmode="group"),
+        "Historical additions and deletions",
+    )
     timing = commit_timing(filtered, TIMEZONE)
-    chart(px.density_heatmap(timing, x="hour", y="weekday", z="commits", color_continuous_scale="Blues"), "Commit timing by weekday and hour")
+    chart(
+        px.density_heatmap(timing, x="hour", y="weekday", z="commits", color_continuous_scale="Blues"),
+        "Commit timing by weekday and hour",
+    )
 elif page == "Contributor Insights":
     st.title("Contributor insights")
-    ranking = filtered.groupby("contributor", as_index=False).agg(commits=("sha", "nunique"), first=("author_date", "min"), last=("author_date", "max"), repositories=("repo", "nunique"))
-    chart(px.bar(ranking.sort_values("commits"), x="commits", y="contributor", orientation="h", color="repositories"), "Contributor commit distribution")
+    ranking = filtered.groupby("contributor", as_index=False).agg(
+        commits=("sha", "nunique"),
+        first=("author_date", "min"),
+        last=("author_date", "max"),
+        repositories=("repo", "nunique"),
+    )
+    chart(
+        px.bar(ranking.sort_values("commits"), x="commits", y="contributor", orientation="h", color="repositories"),
+        "Contributor commit distribution",
+    )
     chart(px.pie(ranking, names="contributor", values="commits"), "Contributor share of commits")
-    monthly = filtered.assign(month=period_strings(filtered.author_date, "M")).groupby(["month", "contributor"], as_index=False).agg(commits=("sha", "nunique"))
+    monthly = (
+        filtered.assign(month=period_strings(filtered.author_date, "M"))
+        .groupby(["month", "contributor"], as_index=False)
+        .agg(commits=("sha", "nunique"))
+    )
     chart(px.area(monthly, x="month", y="commits", color="contributor"), "Contributor activity over time")
     st.dataframe(ranking.sort_values("commits", ascending=False), width="stretch", hide_index=True)
 elif page == "Code Evolution":
     st.title("Code evolution and churn")
     st.caption("Historical churn is Git numstat activity, not a historical source-code size estimate.")
     monthly = activity_by_period(filtered, TIMEZONE, "M")
-    chart(px.bar(monthly, x="period", y=["additions", "deletions", "net_changes"], barmode="group"), "Monthly code changes")
-    churn_by_repo = filtered[~filtered.is_merge.astype(bool)].groupby("repo", as_index=False).agg(additions=("additions", "sum"), deletions=("deletions", "sum"))
+    chart(
+        px.bar(monthly, x="period", y=["additions", "deletions", "net_changes"], barmode="group"),
+        "Monthly code changes",
+    )
+    churn_by_repo = (
+        filtered[~filtered.is_merge.astype(bool)]
+        .groupby("repo", as_index=False)
+        .agg(additions=("additions", "sum"), deletions=("deletions", "sum"))
+    )
     churn_by_repo["churn"] = churn_by_repo.additions + churn_by_repo.deletions
-    chart(px.bar(churn_by_repo, x="repo", y="churn", color="repo", color_discrete_map=color), "Historical churn by repository")
-    hotspots = filtered_files.groupby(["path", "directory"], as_index=False).agg(commits=("sha", "nunique"), contributors=("contributor", "nunique"))
-    chart(px.bar(hotspots.nlargest(25, "commits"), x="commits", y="path", color="contributors", orientation="h"), "Most frequently changed files")
+    chart(
+        px.bar(churn_by_repo, x="repo", y="churn", color="repo", color_discrete_map=color),
+        "Historical churn by repository",
+    )
+    hotspots = filtered_files.groupby(["path", "directory"], as_index=False).agg(
+        commits=("sha", "nunique"), contributors=("contributor", "nunique")
+    )
+    chart(
+        px.bar(hotspots.nlargest(25, "commits"), x="commits", y="path", color="contributors", orientation="h"),
+        "Most frequently changed files",
+    )
 elif page == "Commit Patterns":
     st.title("Commit patterns")
-    conventional = filtered.assign(category=filtered.commit_type.ne("nonconventional").map({True: "Conventional", False: "Other"})).groupby("category", as_index=False).agg(commits=("sha", "nunique"))
+    conventional = (
+        filtered.assign(category=filtered.commit_type.ne("nonconventional").map({True: "Conventional", False: "Other"}))
+        .groupby("category", as_index=False)
+        .agg(commits=("sha", "nunique"))
+    )
     chart(px.pie(conventional, names="category", values="commits"), "Conventional Commit adoption")
     types = filtered.groupby(["repo", "commit_type"], as_index=False).agg(commits=("sha", "nunique"))
-    chart(px.bar(types, x="commit_type", y="commits", color="repo", barmode="group", color_discrete_map=color), "Commit type distribution by repository")
-    scopes = filtered[filtered.scope.astype(bool)].groupby("scope", as_index=False).agg(commits=("sha", "nunique")).nlargest(20, "commits")
+    chart(
+        px.bar(types, x="commit_type", y="commits", color="repo", barmode="group", color_discrete_map=color),
+        "Commit type distribution by repository",
+    )
+    scopes = (
+        filtered[filtered.scope.astype(bool)]
+        .groupby("scope", as_index=False)
+        .agg(commits=("sha", "nunique"))
+        .nlargest(20, "commits")
+    )
     if not scopes.empty:
         chart(px.bar(scopes, x="commits", y="scope", orientation="h"), "Most common Conventional Commit scopes")
     intervals = commit_intervals(filtered)
     if not intervals.empty:
         st.metric("Median interval between authored commits", f"{intervals.median():.1f} hours")
-        chart(px.histogram(intervals, nbins=30, labels={"value": "Hours between commits"}), "Commit interval distribution")
+        chart(
+            px.histogram(intervals, nbins=30, labels={"value": "Hours between commits"}), "Commit interval distribution"
+        )
 elif page == "Contributions Calendar":
     st.title("Project-derived activity calendar")
     st.caption("Not GitHub official contribution counting. Counts selected local Git authored commits.")
