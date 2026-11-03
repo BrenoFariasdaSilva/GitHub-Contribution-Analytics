@@ -36,13 +36,6 @@ Use the dashboard to examine unique commits, contributors, activity calendars an
 
 </div>
 
-## Features
-
-- Analyze deduplicated Git history, source-file changes, and current tracked-file lines of code.
-- Explore contributions, commit activity, languages, files/modules, collaboration, and historical churn in a filterable dashboard.
-- Export CSV, JSON, an HTML executive summary, and high-resolution chart PNGs.
-- Work fully offline for Git-based analytics; GitHub PR, issue, and review data is optional.
-
 ## Setup
 
 Clone the repository and create local configuration:
@@ -126,7 +119,7 @@ If authentication or collection is unavailable, those metrics are shown as unava
 
 History is collected in bulk with one `git log` call per repository and cached in `data/processed`. Current LoC skips binary and unreadable tracked files. Rename detection is limited to Git's `numstat` output. Branch lifetime, GitHub reviews, issues, PRs, and blame ownership are never inferred when their data is absent. Shallow repositories are flagged in metadata.
 
-## Development checks
+## Development verifications
 
 ```bash
 .venv/bin/python -m pytest -q
