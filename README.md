@@ -1,64 +1,19 @@
-<div align="center">
-  
-# [Template-Project.](https://github.com/BrenoFariasdaSilva/Template-Project) <img src="https://github.com/BrenoFariasdaSilva/Template-Project/blob/d4173c3b2249a77b6b1a223b86e801ea2042eddc/.assets/Icons/GitHub%20Colored%20Icon.svg"  width="3%" height="3%">
+# GitHub Contribution Analytics
 
-</div>
+Local-first Streamlit dashboard for contribution, source-code, and historical Git analytics across configured repositories. It never writes to source repositories or GitHub.
 
-<div align="center">
-  
----
+![GitHub Code Size](https://img.shields.io/github/languages/code-size/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
+![GitHub License](https://img.shields.io/github/license/BrenoFariasdaSilva/GitHub-Contribution-Analytics)
 
-Project-Description.
-  
----
+![RepoBeats statistics](https://repobeats.axiom.co/api/embed/1baf2fdc789267d25b7a24b9755164ef7dc772e4.svg)
 
-</div>
+## Features
 
-<div align="center">
-
-![GitHub Code Size in Bytes](https://img.shields.io/github/languages/code-size/BrenoFariasdaSilva/Template-Project)
-![GitHub Commits](https://img.shields.io/github/commit-activity/t/BrenoFariasdaSilva/Template-Project/main)
-![GitHub Last Commit](https://img.shields.io/github/last-commit/BrenoFariasdaSilva/Template-Project)
-![GitHub Forks](https://img.shields.io/github/forks/BrenoFariasdaSilva/Template-Project)
-![GitHub Language Count](https://img.shields.io/github/languages/count/BrenoFariasdaSilva/Template-Project)
-![GitHub License](https://img.shields.io/github/license/BrenoFariasdaSilva/Template-Project)
-![GitHub Stars](https://img.shields.io/github/stars/BrenoFariasdaSilva/Template-Project)
-![GitHub Contributors](https://img.shields.io/github/contributors/BrenoFariasdaSilva/Template-Project)
-![GitHub Created At](https://img.shields.io/github/created-at/BrenoFariasdaSilva/Template-Project)
-![wakatime](https://wakatime.com/badge/github/BrenoFariasdaSilva/Template-Project.svg)
-
-</div>
-
-<div align="center">
-  
-![RepoBeats Statistics](https://repobeats.axiom.co/api/embed/c36c20e25527ac26cdc37e52e5e2335a58f758c8.svg "Repobeats analytics image")
-
-</div>
-
-## Table of Contents
-- [Template-Project. ](#template-project-)
-  - [Table of Contents](#table-of-contents)
-  - [Introduction](#introduction)
-  - [Requirements](#requirements)
-  - [Setup](#setup)
-    - [Clone the repository](#clone-the-repository)
-  - [Installation:](#installation)
-  - [Run Programing Language Code:](#run-programing-language-code)
-    - [Dependencies](#dependencies)
-    - [Dataset - Optional](#dataset---optional)
-  - [Usage](#usage)
-  - [Results - Optional](#results---optional)
-  - [How to Cite?](#how-to-cite)
-  - [Contributing](#contributing)
-  - [Collaborators](#collaborators)
-  - [License](#license)
-    - [Apache License 2.0](#apache-license-20)
-    - [Creative Commons Zero v1.0 Universal (CC0 1.0)](#creative-commons-zero-v10-universal-cc0-10)
-    - [MIT License](#mit-license)
-
-## Introduction
-
-Detailed project description.
+- Analyze deduplicated Git history, source-file changes, and current tracked-file lines of code.
+- Explore contributions, commit activity, languages, files/modules, collaboration, and historical churn in a filterable dashboard.
+- Export CSV, JSON, an HTML executive summary, and high-resolution chart PNGs.
+- Work fully offline for Git-based analytics; GitHub PR, issue, and review data is optional.
 
 ## Requirements
 
