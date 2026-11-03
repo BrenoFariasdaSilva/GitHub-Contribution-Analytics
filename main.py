@@ -44,6 +44,22 @@ def analyze(args: argparse.Namespace) -> None:
         loc.append(current_loc(name, repository, config))
         metadata.append(meta)
         print(f"{name}: {len(repo_commits)} unique commits, {len(repo_files)} changed-file records")
+    if args.repo != "all":
+        try:
+            cached_commits, cached_files, cached_loc, cached_metadata = load_data(ROOT / "data" / "processed")
+        except FileNotFoundError:
+            cached_commits, cached_files, cached_loc, cached_metadata = (
+                pd.DataFrame(),
+                pd.DataFrame(),
+                pd.DataFrame(),
+                [],
+            )
+        commits.insert(
+            0, cached_commits[~cached_commits.repo.isin(selected)] if not cached_commits.empty else cached_commits
+        )
+        files.insert(0, cached_files[~cached_files.repo.isin(selected)] if not cached_files.empty else cached_files)
+        loc.insert(0, cached_loc[~cached_loc.repo.isin(selected)] if not cached_loc.empty else cached_loc)
+        metadata = [item for item in cached_metadata if item.get("name") not in selected] + metadata
     save_data(
         ROOT / "data" / "processed",
         pd.concat(commits, ignore_index=True),
