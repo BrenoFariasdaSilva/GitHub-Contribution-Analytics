@@ -87,3 +87,16 @@ def commit_intervals(commits: pd.DataFrame) -> pd.Series:
     """Return elapsed hours between consecutive authored commits."""
     stamps = pd.to_datetime(commits.get("author_date"), utc=True, errors="coerce").dropna().sort_values()
     return stamps.diff().dropna().dt.total_seconds().div(3600)
+
+
+def contributor_ranking(commits: pd.DataFrame) -> pd.DataFrame:
+    """Rank canonical contributors by unique commits with deterministic tie-breaking."""
+    if commits.empty:
+        return pd.DataFrame(columns=["contributor", "commits", "share_percent"])
+    ranking = commits.groupby("contributor", dropna=False, as_index=False).agg(commits=("sha", "nunique"))
+    ranking["contributor"] = ranking.contributor.fillna("Unknown")
+    ranking = ranking.sort_values(["commits", "contributor"], ascending=[False, True], kind="stable").reset_index(
+        drop=True
+    )
+    ranking["share_percent"] = ranking.commits.div(ranking.commits.sum()).mul(100)
+    return ranking

@@ -16,6 +16,7 @@ from contribution_analytics.analytics import (
     activity_by_period,
     commit_intervals,
     commit_timing,
+    contributor_ranking,
     repository_colors,
     repository_comparison,
 )
@@ -141,7 +142,7 @@ def chart(fig, title: str) -> None:
     filename = f"{BRANDING.slug}-{re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')}.png"
     try:
         image = png_bytes(fig)
-    except ValueError as error:
+    except (RuntimeError, ValueError) as error:
         st.caption(f"PNG export unavailable: {error}")
     else:
         st.download_button(f"Download PNG — {title}", image, filename, "image/png", key=f"png-{filename}")
@@ -476,17 +477,23 @@ elif page == "Repository Activity":
     )
 elif page == "Contributor Insights":
     st.title("Contributor insights")
-    ranking = filtered.groupby("contributor", as_index=False).agg(
-        commits=("sha", "nunique"),
-        first=("author_date", "min"),
-        last=("author_date", "max"),
-        repositories=("repo", "nunique"),
+    ranking = contributor_ranking(filtered).merge(
+        filtered.groupby("contributor", as_index=False).agg(
+            first=("author_date", "min"),
+            last=("author_date", "max"),
+            repositories=("repo", "nunique"),
+        ),
+        on="contributor",
+        how="left",
     )
     chart(
-        px.bar(ranking.sort_values("commits"), x="commits", y="contributor", orientation="h", color="repositories"),
+        px.bar(ranking.iloc[::-1], x="commits", y="contributor", orientation="h", color="repositories", text="commits"),
         "Contributor commit distribution",
     )
-    chart(px.pie(ranking, names="contributor", values="commits"), "Contributor share of commits")
+    chart(
+        px.pie(ranking, names="contributor", values="commits", custom_data=["commits", "share_percent"]),
+        "Contributor share of commits",
+    )
     monthly = (
         filtered.assign(month=period_strings(filtered.author_date, "M"))
         .groupby(["month", "contributor"], as_index=False)
@@ -571,18 +578,24 @@ elif page == "Contributions Calendar":
     st.json(stats)
 elif page == "Contributors":
     st.title("Contributor comparison")
-    ranking = filtered.groupby("contributor", as_index=False).agg(
-        commits=("sha", "nunique"),
-        additions=("additions", "sum"),
-        deletions=("deletions", "sum"),
-        files=("files_changed", "sum"),
-        active_days=("author_date", lambda x: x.dt.date.nunique()),
+    ranking = contributor_ranking(filtered).merge(
+        filtered.groupby("contributor", as_index=False).agg(
+            additions=("additions", "sum"),
+            deletions=("deletions", "sum"),
+            files=("files_changed", "sum"),
+            active_days=("author_date", lambda x: x.dt.date.nunique()),
+        ),
+        on="contributor",
+        how="left",
     )
     chart(
-        px.bar(ranking.sort_values("commits"), x="commits", y="contributor", orientation="h", color="active_days"),
+        px.bar(ranking.iloc[::-1], x="commits", y="contributor", orientation="h", color="active_days", text="commits"),
         "Commit ranking",
     )
-    chart(px.pie(ranking, names="contributor", values="commits"), "Contributor share of commits")
+    chart(
+        px.pie(ranking, names="contributor", values="commits", custom_data=["commits", "share_percent"]),
+        "Contributor share of commits",
+    )
     activity = (
         filtered.assign(month=period_strings(filtered.author_date, "M"))
         .groupby(["month", "contributor"], as_index=False)

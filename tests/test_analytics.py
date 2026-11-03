@@ -2,7 +2,12 @@
 
 import pandas as pd
 
-from contribution_analytics.analytics import activity_by_period, repository_colors, repository_comparison
+from contribution_analytics.analytics import (
+    activity_by_period,
+    contributor_ranking,
+    repository_colors,
+    repository_comparison,
+)
 from contribution_analytics.metrics import filter_commits
 
 
@@ -58,3 +63,12 @@ def test_repository_comparison_handles_arbitrary_names() -> None:
     loc = pd.DataFrame({"repo": ["mobile-app"], "path": ["a.py"], "physical_loc": [10]})
     result = repository_comparison(commits, loc, "UTC")
     assert result.loc[0, "repo"] == "mobile-app" and result.loc[0, "conventional_percent"] == 100.0
+
+
+def test_contributor_ranking_is_deterministic() -> None:
+    """Ranking uses commit count then contributor name across all comparison charts."""
+    commits = pd.DataFrame({"sha": ["1", "2", "3", "4"], "contributor": ["Zoe", "Ana", "Zoe", "Beto"]})
+    ranking = contributor_ranking(commits)
+    assert ranking.contributor.tolist() == ["Zoe", "Ana", "Beto"]
+    assert ranking.commits.tolist() == [2, 1, 1]
+    assert round(ranking.share_percent.sum(), 5) == 100
