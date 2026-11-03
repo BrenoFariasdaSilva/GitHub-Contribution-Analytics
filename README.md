@@ -80,6 +80,8 @@ python3 -m venv .venv
 .venv/bin/python -m streamlit run app.py
 ```
 
+PNG export uses Plotly with Kaleido 1.x and requires a locally installed Google Chrome or Chromium browser. The application reports export failures instead of generating invalid downloads.
+
 ## Commands
 
 - `python main.py [--config PATH] analyze --repo all|CONFIGURED_NAME` — extract deduplicated Git history and current tracked-file LoC for any configured repository.

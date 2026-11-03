@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pandas as pd
+import plotly.graph_objects as go
 
 from contribution_analytics.branding import Branding
 from contribution_analytics.metrics import export_all
@@ -20,3 +21,9 @@ def test_export_html_escapes_title_and_metadata_hides_paths(tmp_path: Path) -> N
     assert "&lt;Unsafe&gt;" in report.read_text(encoding="utf-8")
     metadata = (tmp_path / "exports" / "json" / "analysis_metadata.json").read_text(encoding="utf-8")
     assert "/private/path" not in metadata
+
+
+def test_kaleido_renders_png_bytes() -> None:
+    """The supported Plotly and Kaleido stack produces a valid PNG signature."""
+    image = go.Figure(go.Bar(x=["A", "B"], y=[1, 2])).to_image(format="png", width=640, height=480)
+    assert image.startswith(b"\x89PNG\r\n\x1a\n") and len(image) > 1_000
