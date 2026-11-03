@@ -12,7 +12,7 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
-from contribution_analytics.analytics import repository_colors
+from contribution_analytics.analytics import activity_by_period, commit_timing, repository_colors
 from contribution_analytics.branding import resolve_branding
 from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import load_data
@@ -53,6 +53,7 @@ pages = [
     "Data Explorer",
     "Export Reports",
     "Configuration / Data Sources",
+    "Repository Activity",
 ]
 available_repos = sorted(commits.repo.unique())
 available_people = sorted(commits.contributor.dropna().unique())
@@ -438,6 +439,19 @@ if page == "Overview":
         px.bar(ranks, x="contributor", y="commits", color="churn", color_continuous_scale="Teal"),
         "Contributors by commits and additions",
     )
+elif page == "Repository Activity":
+    st.title("Repository activity")
+    frequency = st.segmented_control("Aggregation", {"D": "Daily", "W": "Weekly", "M": "Monthly"}, default="W")
+    activity = activity_by_period(filtered, TIMEZONE, frequency or "W")
+    st.caption(f"Author timestamps are grouped in {TIMEZONE}. A commit is not a measure of time spent programming.")
+    values = summary(filtered, filtered_files, filtered_loc)
+    cards = [("Active days", filtered.author_date.dt.tz_convert(TIMEZONE).dt.date.nunique()), ("Average active day", f"{values['average_daily_commits']:.2f}"), ("Latest commit", values["last_commit"]), ("Timezone", TIMEZONE)]
+    for column, (label, value) in zip(st.columns(4), cards):
+        column.metric(label, value)
+    chart(px.line(activity, x="period", y="commits", markers=True), "Commit activity over time")
+    chart(px.bar(activity, x="period", y=["additions", "deletions"], barmode="group"), "Historical additions and deletions")
+    timing = commit_timing(filtered, TIMEZONE)
+    chart(px.density_heatmap(timing, x="hour", y="weekday", z="commits", color_continuous_scale="Blues"), "Commit timing by weekday and hour")
 elif page == "Contributions Calendar":
     st.title("Project-derived activity calendar")
     st.caption("Not GitHub official contribution counting. Counts selected local Git authored commits.")
