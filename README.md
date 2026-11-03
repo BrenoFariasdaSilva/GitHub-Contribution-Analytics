@@ -6,9 +6,13 @@
 
 <div align="center">
   
+---
 
 Local-first Streamlit dashboard for contribution, source-code, and historical Git analytics across configured repositories. It never writes to source repositories or GitHub.
 
+---
+
+</div>
 
 <div align="center">
 
