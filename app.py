@@ -12,7 +12,7 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
-from contribution_analytics.analytics import activity_by_period, commit_timing, repository_colors
+from contribution_analytics.analytics import activity_by_period, commit_intervals, commit_timing, repository_colors
 from contribution_analytics.branding import resolve_branding
 from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import load_data
@@ -56,6 +56,7 @@ pages = [
     "Repository Activity",
     "Contributor Insights",
     "Code Evolution",
+    "Commit Patterns",
 ]
 available_repos = sorted(commits.repo.unique())
 available_people = sorted(commits.contributor.dropna().unique())
@@ -472,6 +473,19 @@ elif page == "Code Evolution":
     chart(px.bar(churn_by_repo, x="repo", y="churn", color="repo", color_discrete_map=color), "Historical churn by repository")
     hotspots = filtered_files.groupby(["path", "directory"], as_index=False).agg(commits=("sha", "nunique"), contributors=("contributor", "nunique"))
     chart(px.bar(hotspots.nlargest(25, "commits"), x="commits", y="path", color="contributors", orientation="h"), "Most frequently changed files")
+elif page == "Commit Patterns":
+    st.title("Commit patterns")
+    conventional = filtered.assign(category=filtered.commit_type.ne("nonconventional").map({True: "Conventional", False: "Other"})).groupby("category", as_index=False).agg(commits=("sha", "nunique"))
+    chart(px.pie(conventional, names="category", values="commits"), "Conventional Commit adoption")
+    types = filtered.groupby(["repo", "commit_type"], as_index=False).agg(commits=("sha", "nunique"))
+    chart(px.bar(types, x="commit_type", y="commits", color="repo", barmode="group", color_discrete_map=color), "Commit type distribution by repository")
+    scopes = filtered[filtered.scope.astype(bool)].groupby("scope", as_index=False).agg(commits=("sha", "nunique")).nlargest(20, "commits")
+    if not scopes.empty:
+        chart(px.bar(scopes, x="commits", y="scope", orientation="h"), "Most common Conventional Commit scopes")
+    intervals = commit_intervals(filtered)
+    if not intervals.empty:
+        st.metric("Median interval between authored commits", f"{intervals.median():.1f} hours")
+        chart(px.histogram(intervals, nbins=30, labels={"value": "Hours between commits"}), "Commit interval distribution")
 elif page == "Contributions Calendar":
     st.title("Project-derived activity calendar")
     st.caption("Not GitHub official contribution counting. Counts selected local Git authored commits.")
