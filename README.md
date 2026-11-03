@@ -1,4 +1,11 @@
-# GitHub Contribution Analytics
+<div align="center">
+  
+# [GitHub-Contribution-Analytics.](https://github.com/BrenoFariasdaSilva/GitHub-Contribution-Analytics) <img src="https://github.com/BrenoFariasdaSilva/GitHub-Contribution-Analytics/blob/eb9af994aa7e9096bd8dad4bc15b91b01f38208c/.assets/Images/Github.svg"  width="3%" height="3%">
+
+</div>
+
+<div align="center">
+  
 
 Local-first Streamlit dashboard for contribution, source-code, and historical Git analytics across configured repositories. It never writes to source repositories or GitHub.
 
