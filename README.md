@@ -23,14 +23,15 @@ Local-first Streamlit dashboard for contribution, source-code, and historical Gi
 
 ## Setup
 
-### Clone the repository
+Clone the repository and create local configuration:
 
-1. Clone the repository with the following command:
+```bash
+git clone https://github.com/BrenoFariasdaSilva/GitHub-Contribution-Analytics.git
+cd GitHub-Contribution-Analytics
+cp config/settings.example.yaml config/settings.yaml
+```
 
-   ```bash
-   git clone https://github.com/BrenoFariasdaSilva/Template-Project.git
-   cd Template-Project
-   ```
+Edit `config/settings.yaml` with arbitrary repository names and paths, exact identity aliases, exclusions, timezone, bot patterns, and feature switches. This local file is ignored by Git. `CONTRIBUTION_ANALYTICS_CONFIG` can select another local settings file, while `CONTRIBUTION_ANALYTICS_DISPLAY_NAME` overrides the title derived from this application's Git origin.
 
 ## Installation:
 
