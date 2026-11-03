@@ -38,6 +38,7 @@ MANIFEST
 # Tests, coverage, and tooling
 .pytest_cache/
 .ruff_cache/
+.playwright-cli/
 .mypy_cache/
 .pyre/
 .tox/
