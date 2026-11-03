@@ -55,6 +55,7 @@ pages = [
     "Configuration / Data Sources",
     "Repository Activity",
     "Contributor Insights",
+    "Code Evolution",
 ]
 available_repos = sorted(commits.repo.unique())
 available_people = sorted(commits.contributor.dropna().unique())
@@ -461,6 +462,16 @@ elif page == "Contributor Insights":
     monthly = filtered.assign(month=period_strings(filtered.author_date, "M")).groupby(["month", "contributor"], as_index=False).agg(commits=("sha", "nunique"))
     chart(px.area(monthly, x="month", y="commits", color="contributor"), "Contributor activity over time")
     st.dataframe(ranking.sort_values("commits", ascending=False), width="stretch", hide_index=True)
+elif page == "Code Evolution":
+    st.title("Code evolution and churn")
+    st.caption("Historical churn is Git numstat activity, not a historical source-code size estimate.")
+    monthly = activity_by_period(filtered, TIMEZONE, "M")
+    chart(px.bar(monthly, x="period", y=["additions", "deletions", "net_changes"], barmode="group"), "Monthly code changes")
+    churn_by_repo = filtered[~filtered.is_merge.astype(bool)].groupby("repo", as_index=False).agg(additions=("additions", "sum"), deletions=("deletions", "sum"))
+    churn_by_repo["churn"] = churn_by_repo.additions + churn_by_repo.deletions
+    chart(px.bar(churn_by_repo, x="repo", y="churn", color="repo", color_discrete_map=color), "Historical churn by repository")
+    hotspots = filtered_files.groupby(["path", "directory"], as_index=False).agg(commits=("sha", "nunique"), contributors=("contributor", "nunique"))
+    chart(px.bar(hotspots.nlargest(25, "commits"), x="commits", y="path", color="contributors", orientation="h"), "Most frequently changed files")
 elif page == "Contributions Calendar":
     st.title("Project-derived activity calendar")
     st.caption("Not GitHub official contribution counting. Counts selected local Git authored commits.")
