@@ -108,10 +108,23 @@ History is collected in bulk with one `git log` call per repository and cached i
 
 The tests also enforce docstrings for every function in `app.py`, `main.py`, `src/`, and `tests/`.
 
-## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for branch, commit, and pull-request guidance.
+## Collaborators
 
+We thank the following people who contributed to this project:
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="#" title="defina o titulo do link">
+        <img src="https://github.com/BrenoFariasdaSilva.png" width="100px;" alt="My Profile Picture"/><br>
+        <sub>
+          <b>Breno Farias da Silva</b>
+        </sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## License
 
