@@ -59,13 +59,15 @@ python3 -m venv .venv
 .venv/bin/streamlit run app.py
 ```
 
-### Dependencies
+## Commands
 
-1. Install the project dependencies with the following command:
+- `python main.py [--config PATH] analyze --repo all|CONFIGURED_NAME` — extract deduplicated Git history and current tracked-file LoC for any configured repository.
+- `python main.py export --all` — write CSV, JSON, and HTML reports under `exports/`.
+- `python main.py diagnostics` — validate configured repositories and GitHub availability.
+- `python main.py test` — run the test suite.
+- `make lint` — run Ruff.
 
-   ```bash
-   make dependencies
-   ```
+## Dashboard
 
 ### Dataset - Optional
 
