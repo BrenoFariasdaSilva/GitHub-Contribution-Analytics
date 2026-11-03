@@ -17,7 +17,9 @@ Local-first Streamlit dashboard for contribution, source-code, and historical Gi
 
 ## Requirements
 
-Bullet points of the requirements.
+- Python 3.12 or later
+- Git
+- One or more local Git repositories to analyze
 
 ## Setup
 
