@@ -1,0 +1,60 @@
+"""Tests for generic colors and timezone-aware analytics."""
+
+import pandas as pd
+
+from contribution_analytics.analytics import activity_by_period, repository_colors, repository_comparison
+from contribution_analytics.metrics import filter_commits
+
+
+def test_repository_colors_are_stable_when_filtering() -> None:
+    """A repository keeps its deterministic color in a smaller selection."""
+    all_colors = repository_colors(["api", "web", "mobile"])
+    assert all_colors["api"] == repository_colors(["api"])["api"]
+
+
+def test_empty_repository_filter_selects_no_commits() -> None:
+    """An explicit empty repository list differs from no repository filter."""
+    commits = pd.DataFrame(
+        {
+            "repo": ["api"],
+            "contributor": ["A"],
+            "is_bot": [False],
+            "author_date": pd.to_datetime(["2026-01-01"], utc=True),
+        }
+    )
+    assert filter_commits(commits, []).empty
+    assert len(filter_commits(commits, None)) == 1
+
+
+def test_activity_uses_configured_timezone_at_midnight() -> None:
+    """A UTC-midnight-adjacent commit groups into the configured local day."""
+    commits = pd.DataFrame(
+        {
+            "sha": ["a"],
+            "contributor": ["A"],
+            "author_date": pd.to_datetime(["2026-01-01T01:00:00Z"]),
+            "additions": [2],
+            "deletions": [1],
+        }
+    )
+    assert activity_by_period(commits, "America/Sao_Paulo").period.iloc[0] == "2025-12-31"
+    assert activity_by_period(commits, "UTC").period.iloc[0] == "2026-01-01"
+
+
+def test_repository_comparison_handles_arbitrary_names() -> None:
+    """Comparison metrics do not depend on fixed repository labels."""
+    commits = pd.DataFrame(
+        {
+            "repo": ["mobile-app"],
+            "sha": ["a"],
+            "contributor": ["A"],
+            "is_merge": [False],
+            "commit_type": ["feat"],
+            "author_date": pd.to_datetime(["2026-01-01"], utc=True),
+            "additions": [3],
+            "deletions": [1],
+        }
+    )
+    loc = pd.DataFrame({"repo": ["mobile-app"], "path": ["a.py"], "physical_loc": [10]})
+    result = repository_comparison(commits, loc, "UTC")
+    assert result.loc[0, "repo"] == "mobile-app" and result.loc[0, "conventional_percent"] == 100.0

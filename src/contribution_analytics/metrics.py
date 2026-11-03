@@ -22,9 +22,9 @@ def filter_commits(
 ) -> pd.DataFrame:
     """Filter commit data by repository, contributor, date, and bot status."""
     data = commits.copy()
-    if repos:
+    if repos is not None:
         data = data[data.repo.isin(repos)]
-    if contributors:
+    if contributors is not None:
         data = data[data.contributor.isin(contributors)]
     if humans_only:
         data = data[~data.is_bot.astype(bool)]
@@ -35,11 +35,11 @@ def filter_commits(
     return data
 
 
-def commit_daily(commits: pd.DataFrame) -> pd.DataFrame:
-    """Aggregate unique commits and ordinary churn by authored day."""
+def commit_daily(commits: pd.DataFrame, timezone: str = "UTC") -> pd.DataFrame:
+    """Aggregate unique commits and ordinary churn by configured local authored day."""
     if commits.empty:
         return pd.DataFrame(columns=["date", "commits", "additions", "deletions", "churn"])
-    data = commits.assign(date=commits.author_date.dt.date)
+    data = commits.assign(date=pd.to_datetime(commits.author_date, utc=True).dt.tz_convert(timezone).dt.date)
     return (
         data.groupby("date", as_index=False)
         .agg(commits=("sha", "nunique"), additions=("additions", "sum"), deletions=("deletions", "sum"))
