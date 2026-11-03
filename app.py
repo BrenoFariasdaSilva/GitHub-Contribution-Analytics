@@ -273,7 +273,7 @@ def all_figures(
     churn = (
         commits_data[~commits_data.is_merge.astype(bool)]
         .groupby(["contributor", "repo"], as_index=False)
-        .agg(additions=("additions", "sum"), deletions=("deletions", "sum"), churn=("additions", "sum"))
+        .agg(additions=("additions", "sum"), deletions=("deletions", "sum"))
     )
     add_figure(
         figures,
@@ -505,7 +505,7 @@ elif page == "Code Evolution":
     churn_by_repo = (
         filtered[~filtered.is_merge.astype(bool)]
         .groupby("repo", as_index=False)
-        .agg(additions=("additions", "sum"), deletions=("deletions", "sum"))
+        .agg(additions=("additions", "sum"), deletions=("deletions", "sum"), churn=("additions", "sum"))
     )
     churn_by_repo["churn"] = churn_by_repo.additions + churn_by_repo.deletions
     chart(
