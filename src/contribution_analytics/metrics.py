@@ -94,7 +94,7 @@ def contribution_streaks(
     active = set(ordered)
     while cursor in active:
         running += 1
-        cursor -= pd.Timedelta(days=1)
+        cursor -= timedelta(days=1)
     peak = daily.loc[daily.commits.idxmax()]
     return {
         "active_days": len(ordered),

@@ -122,8 +122,12 @@ def test_summary_uses_local_first_last_and_average_day() -> None:
 def test_current_streak_uses_local_today() -> None:
     """A local active day counts only while it is today's date."""
     daily = pd.DataFrame({"date": [date(2025, 12, 31)], "commits": [1]})
-    assert contribution_streaks(daily, timezone="America/Sao_Paulo", as_of=date(2025, 12, 31))["current_streak"] == 1
-    assert contribution_streaks(daily, timezone="America/Sao_Paulo", as_of=date(2026, 1, 1))["current_streak"] == 0
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        assert (
+            contribution_streaks(daily, timezone="America/Sao_Paulo", as_of=date(2025, 12, 31))["current_streak"] == 1
+        )
+        assert contribution_streaks(daily, timezone="America/Sao_Paulo", as_of=date(2026, 1, 1))["current_streak"] == 0
 
 
 def test_repository_comparison_handles_arbitrary_names() -> None:
