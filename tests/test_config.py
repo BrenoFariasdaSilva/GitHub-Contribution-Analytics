@@ -1,5 +1,6 @@
 """Tests for safe configuration loading."""
 
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -34,3 +35,9 @@ def test_load_config_rejects_invalid_timezone(tmp_path: Path) -> None:
     path.write_text("repositories:\n  sample:\n    path: /tmp/sample\ntimezone: nowhere/invalid\n", encoding="utf-8")
     with pytest.raises(ValueError, match="Invalid timezone"):
         load_config(path)
+
+
+def test_local_dashboard_disables_usage_telemetry() -> None:
+    """The local-first browser must not send Streamlit usage events."""
+    settings = tomllib.loads((Path(__file__).resolve().parents[1] / ".streamlit" / "config.toml").read_text())
+    assert settings["browser"]["gatherUsageStats"] is False
