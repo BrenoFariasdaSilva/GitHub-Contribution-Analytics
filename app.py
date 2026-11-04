@@ -17,6 +17,7 @@ from contribution_analytics.analytics import (
     commit_intervals,
     commit_timing,
     contributor_ranking,
+    localized_timestamps,
     repository_colors,
     repository_comparison,
 )
@@ -205,8 +206,9 @@ def all_figures(
         "Contributors by commits and additions",
         px.bar(ranks, x="contributor", y="commits", color="churn", color_continuous_scale="Teal"),
     )
-    calendar_year = int(commits_data.author_date.dt.year.max())
-    calendar_daily = commit_daily(commits_data[commits_data.author_date.dt.year == calendar_year], TIMEZONE)
+    calendar_years = localized_timestamps(commits_data, TIMEZONE).dt.year
+    calendar_year = int(calendar_years.max())
+    calendar_daily = commit_daily(commits_data[calendar_years == calendar_year], TIMEZONE)
     grid = calendar_daily.assign(
         day=pd.to_datetime(calendar_daily.date),
         weekday=lambda x: x.day.dt.weekday,
@@ -566,8 +568,9 @@ elif page == "Commit Patterns":
 elif page == "Contributions Calendar":
     st.title("Project-derived activity calendar")
     st.caption("Not GitHub official contribution counting. Counts selected local Git authored commits.")
-    year = st.selectbox("Year", sorted(filtered.author_date.dt.year.unique(), reverse=True))
-    daily = commit_daily(filtered[filtered.author_date.dt.year == year], TIMEZONE)
+    calendar_years = localized_timestamps(filtered, TIMEZONE).dt.year
+    year = st.selectbox("Year", sorted(calendar_years.unique(), reverse=True))
+    daily = commit_daily(filtered[calendar_years == year], TIMEZONE)
     grid = daily.assign(
         day=pd.to_datetime(daily.date),
         weekday=lambda x: x.day.dt.weekday,

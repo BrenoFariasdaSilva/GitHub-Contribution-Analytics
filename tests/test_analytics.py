@@ -7,6 +7,7 @@ import pandas as pd
 from contribution_analytics.analytics import (
     activity_by_period,
     contributor_ranking,
+    localized_timestamps,
     repository_colors,
     repository_comparison,
 )
@@ -70,6 +71,12 @@ def test_activity_uses_configured_timezone_at_midnight() -> None:
     )
     assert activity_by_period(commits, "America/Sao_Paulo").period.iloc[0] == "2025-12-31"
     assert activity_by_period(commits, "UTC").period.iloc[0] == "2026-01-01"
+
+
+def test_calendar_year_uses_local_authored_date() -> None:
+    """A UTC January commit appears in the previous local calendar year."""
+    commits = pd.DataFrame({"author_date": pd.to_datetime(["2026-01-01T01:00:00Z"])})
+    assert localized_timestamps(commits, "America/Sao_Paulo").dt.year.tolist() == [2025]
 
 
 def test_repository_comparison_handles_arbitrary_names() -> None:
