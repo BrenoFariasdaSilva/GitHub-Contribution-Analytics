@@ -19,8 +19,9 @@ def filter_commits(
     start: date | None = None,
     end: date | None = None,
     humans_only: bool = False,
+    timezone: str = "UTC",
 ) -> pd.DataFrame:
-    """Filter commit data by repository, contributor, date, and bot status."""
+    """Filter commits by repository, contributor, local authored date, and bot status."""
     data = commits.copy()
     if repos is not None:
         data = data[data.repo.isin(repos)]
@@ -28,10 +29,13 @@ def filter_commits(
         data = data[data.contributor.isin(contributors)]
     if humans_only:
         data = data[~data.is_bot.astype(bool)]
-    if start:
-        data = data[data.author_date.dt.date >= start]
-    if end:
-        data = data[data.author_date.dt.date <= end]
+    if start or end:
+        local_dates = pd.to_datetime(data.author_date, utc=True).dt.tz_convert(timezone).dt.date
+        if start:
+            data = data[local_dates >= start]
+            local_dates = local_dates.loc[data.index]
+        if end:
+            data = data[local_dates <= end]
     return data
 
 

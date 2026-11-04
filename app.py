@@ -23,7 +23,13 @@ from contribution_analytics.analytics import (
 from contribution_analytics.branding import resolve_branding
 from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import load_data
-from contribution_analytics.metrics import commit_daily, contribution_streaks, filter_commits, github_status, summary
+from contribution_analytics.metrics import (
+    commit_daily,
+    contribution_streaks,
+    filter_commits,
+    github_status,
+    summary,
+)
 
 CONFIG = load_config(config_path(None, ROOT))
 TIMEZONE = str(CONFIG["timezone"])
@@ -71,7 +77,8 @@ url_page = st.query_params.get("page", "Overview")
 initial_page = url_page if url_page in pages else "Overview"
 url_repos = [value for value in st.query_params.get_all("repo") if value in available_repos]
 url_people = [value for value in st.query_params.get_all("contributor") if value in available_people]
-minimum, maximum = commits.author_date.min().date(), commits.author_date.max().date()
+local_dates = pd.to_datetime(commits.author_date, utc=True).dt.tz_convert(TIMEZONE).dt.date
+minimum, maximum = local_dates.min(), local_dates.max()
 try:
     initial_dates = (
         pd.Timestamp(st.query_params.get("start", minimum)).date(),
@@ -126,7 +133,7 @@ with st.sidebar:
         st.stop()
 
 filtered = filter_commits(
-    commits, selected_repos, selected_people if selected_people else None, dates[0], dates[1], human_only
+    commits, selected_repos, selected_people if selected_people else None, dates[0], dates[1], human_only, TIMEZONE
 )
 filtered_files = file_changes[file_changes.sha.isin(filtered.sha)]
 filtered_loc = loc[loc.repo.isin(selected_repos)]

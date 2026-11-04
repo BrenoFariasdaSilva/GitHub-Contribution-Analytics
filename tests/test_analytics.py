@@ -1,5 +1,7 @@
 """Tests for generic colors and timezone-aware analytics."""
 
+from datetime import date
+
 import pandas as pd
 
 from contribution_analytics.analytics import (
@@ -29,6 +31,23 @@ def test_empty_repository_filter_selects_no_commits() -> None:
     )
     assert filter_commits(commits, []).empty
     assert len(filter_commits(commits, None)) == 1
+
+
+def test_date_filter_uses_configured_timezone() -> None:
+    """A commit near UTC midnight belongs to its configured local date."""
+    commits = pd.DataFrame(
+        {
+            "repo": ["api"],
+            "contributor": ["A"],
+            "is_bot": [False],
+            "author_date": pd.to_datetime(["2026-01-01T01:00:00Z"]),
+        }
+    )
+    assert (
+        len(filter_commits(commits, start=date(2025, 12, 31), end=date(2025, 12, 31), timezone="America/Sao_Paulo"))
+        == 1
+    )
+    assert filter_commits(commits, start=date(2026, 1, 1), end=date(2026, 1, 1), timezone="America/Sao_Paulo").empty
 
 
 def test_activity_uses_configured_timezone_at_midnight() -> None:
