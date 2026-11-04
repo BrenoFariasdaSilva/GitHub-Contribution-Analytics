@@ -28,6 +28,7 @@ from contribution_analytics.metrics import (
     contribution_streaks,
     filter_commits,
     github_status,
+    initial_repositories,
     summary,
 )
 
@@ -95,6 +96,7 @@ def persist_navigation() -> None:
     current_dates = st.session_state["date_range_filter"]
     st.query_params["page"] = st.session_state["page_selector"]
     st.query_params["repo"] = st.session_state["repository_filter"]
+    st.query_params["repos"] = "none" if not st.session_state["repository_filter"] else "selected"
     st.query_params["contributor"] = st.session_state["contributor_filter"]
     st.query_params["humans"] = "1" if st.session_state["human_filter"] else "0"
     st.query_params["start"] = current_dates[0].isoformat()
@@ -108,7 +110,7 @@ with st.sidebar:
     selected_repos = st.multiselect(
         "Repositories",
         available_repos,
-        default=url_repos or available_repos,
+        default=initial_repositories(available_repos, url_repos, st.query_params.get("repos") == "none"),
         key="repository_filter",
         on_change=persist_navigation,
     )

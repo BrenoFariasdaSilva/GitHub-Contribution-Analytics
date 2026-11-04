@@ -12,6 +12,14 @@ from contribution_analytics.branding import Branding
 from contribution_analytics.privacy import public_metadata
 
 
+def initial_repositories(available: list[str], requested: list[str], explicitly_empty: bool) -> list[str]:
+    """Restore an explicit empty selection across browser refreshes."""
+    if explicitly_empty:
+        return []
+    selected = [repo for repo in requested if repo in available]
+    return selected or available
+
+
 def filter_commits(
     commits: pd.DataFrame,
     repos: list[str] | None = None,

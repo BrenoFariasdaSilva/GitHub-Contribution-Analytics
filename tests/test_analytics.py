@@ -10,7 +10,7 @@ from contribution_analytics.analytics import (
     repository_colors,
     repository_comparison,
 )
-from contribution_analytics.metrics import filter_commits
+from contribution_analytics.metrics import filter_commits, initial_repositories
 
 
 def test_repository_colors_are_stable_when_filtering() -> None:
@@ -31,6 +31,13 @@ def test_empty_repository_filter_selects_no_commits() -> None:
     )
     assert filter_commits(commits, []).empty
     assert len(filter_commits(commits, None)) == 1
+
+
+def test_explicit_empty_repository_selection_survives_refresh() -> None:
+    """An empty selection marker takes precedence over the default repositories."""
+    assert initial_repositories(["api", "web"], [], True) == []
+    assert initial_repositories(["api", "web"], [], False) == ["api", "web"]
+    assert initial_repositories(["api", "web"], ["api"], False) == ["api"]
 
 
 def test_date_filter_uses_configured_timezone() -> None:
