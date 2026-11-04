@@ -14,7 +14,7 @@ from contribution_analytics.analytics import (
     repository_colors,
     repository_comparison,
 )
-from contribution_analytics.metrics import filter_commits, initial_repositories, summary
+from contribution_analytics.metrics import contribution_streaks, filter_commits, initial_repositories, summary
 
 
 def test_repository_colors_are_stable_when_filtering() -> None:
@@ -117,6 +117,13 @@ def test_summary_uses_local_first_last_and_average_day() -> None:
         "2026-01-01",
         1.0,
     )
+
+
+def test_current_streak_uses_local_today() -> None:
+    """A local active day counts only while it is today's date."""
+    daily = pd.DataFrame({"date": [date(2025, 12, 31)], "commits": [1]})
+    assert contribution_streaks(daily, timezone="America/Sao_Paulo", as_of=date(2025, 12, 31))["current_streak"] == 1
+    assert contribution_streaks(daily, timezone="America/Sao_Paulo", as_of=date(2026, 1, 1))["current_streak"] == 0
 
 
 def test_repository_comparison_handles_arbitrary_names() -> None:

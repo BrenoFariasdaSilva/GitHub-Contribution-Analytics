@@ -585,7 +585,7 @@ elif page == "Contributions Calendar":
         ),
         f"{year} authored commits per day",
     )
-    stats = contribution_streaks(daily, year)
+    stats = contribution_streaks(daily, year, TIMEZONE)
     st.json(stats)
 elif page == "Contributors":
     st.title("Contributor comparison")

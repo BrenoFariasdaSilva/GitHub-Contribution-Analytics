@@ -59,8 +59,10 @@ def commit_daily(commits: pd.DataFrame, timezone: str = "UTC") -> pd.DataFrame:
     )
 
 
-def contribution_streaks(daily: pd.DataFrame, year: int | None = None) -> dict[str, Any]:
-    """Calculate active-day and contiguous contribution streak statistics."""
+def contribution_streaks(
+    daily: pd.DataFrame, year: int | None = None, timezone: str = "UTC", as_of: date | None = None
+) -> dict[str, Any]:
+    """Calculate active-day and contiguous streaks in the local timezone."""
     if daily.empty:
         return {
             "active_days": 0,
@@ -86,7 +88,7 @@ def contribution_streaks(daily: pd.DataFrame, year: int | None = None) -> dict[s
     for previous, today in pairwise(ordered):
         current = current + 1 if (today - previous).days == 1 else 1
         longest = max(longest, current)
-    today = pd.Timestamp.now(tz="UTC").date()
+    today = as_of or pd.Timestamp.now(tz=timezone).date()
     running = 0
     cursor = today
     active = set(ordered)
