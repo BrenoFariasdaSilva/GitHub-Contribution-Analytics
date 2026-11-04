@@ -13,7 +13,7 @@ from contribution_analytics.analytics import (
     repository_colors,
     repository_comparison,
 )
-from contribution_analytics.metrics import filter_commits, initial_repositories
+from contribution_analytics.metrics import filter_commits, initial_repositories, summary
 
 
 def test_repository_colors_are_stable_when_filtering() -> None:
@@ -93,6 +93,27 @@ def test_contributor_active_days_use_local_dates() -> None:
     timestamps = pd.to_datetime(["2026-01-01T01:00:00Z", "2025-12-31T23:00:00Z"])
     assert active_day_count(pd.Series(timestamps), "America/Sao_Paulo") == 1
     assert active_day_count(pd.Series(timestamps), "UTC") == 2
+
+
+def test_summary_uses_local_first_last_and_average_day() -> None:
+    """Headline dates and daily average agree with local chart aggregation."""
+    commits = pd.DataFrame(
+        {
+            "sha": ["a", "b"],
+            "author_date": pd.to_datetime(["2026-01-01T01:00:00Z", "2026-01-01T23:00:00Z"]),
+            "contributor": ["A", "A"],
+            "is_merge": [False, False],
+            "additions": [1, 1],
+            "deletions": [0, 0],
+        }
+    )
+    loc = pd.DataFrame(columns=["path", "physical_loc", "language"])
+    result = summary(commits, pd.DataFrame(), loc, "America/Sao_Paulo")
+    assert (result["first_commit"], result["last_commit"], result["average_daily_commits"]) == (
+        "2025-12-31",
+        "2026-01-01",
+        1.0,
+    )
 
 
 def test_repository_comparison_handles_arbitrary_names() -> None:

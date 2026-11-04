@@ -73,7 +73,7 @@ def analyze(args: argparse.Namespace) -> None:
 def export(args: argparse.Namespace) -> None:
     """Generate public-facing exports from the local analysis cache."""
     commits, files, loc, metadata = load_data(ROOT / "data" / "processed")
-    paths = export_all(ROOT, commits, files, loc, metadata, branding(args))
+    paths = export_all(ROOT, commits, files, loc, metadata, branding(args), str(settings(args)["timezone"]))
     print(f"Generated {len(paths)} exports")
 
 

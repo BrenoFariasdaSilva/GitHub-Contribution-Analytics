@@ -318,6 +318,7 @@ def all_figures(
                     commits_data[commits_data.repo == repo],
                     files_data[files_data.repo == repo],
                     loc_data[loc_data.repo == repo],
+                    TIMEZONE,
                 ),
             }
             for repo in sorted(commits_data.repo.unique())
@@ -428,7 +429,7 @@ if not selected_repos:
 
 if page == "Overview":
     st.title(BRANDING.title)
-    values = summary(filtered, filtered_files, filtered_loc)
+    values = summary(filtered, filtered_files, filtered_loc, TIMEZONE)
     cards = [
         ("Unique commits", values["commits"]),
         ("Contributors", values["contributors"]),
@@ -465,7 +466,7 @@ elif page == "Repository Activity":
     frequency = st.segmented_control("Aggregation", {"D": "Daily", "W": "Weekly", "M": "Monthly"}, default="W")
     activity = activity_by_period(filtered, TIMEZONE, frequency or "W")
     st.caption(f"Author timestamps are grouped in {TIMEZONE}. A commit is not a measure of time spent programming.")
-    values = summary(filtered, filtered_files, filtered_loc)
+    values = summary(filtered, filtered_files, filtered_loc, TIMEZONE)
     cards = [
         ("Active days", filtered.author_date.dt.tz_convert(TIMEZONE).dt.date.nunique()),
         ("Average active day", f"{values['average_daily_commits']:.2f}"),

@@ -103,10 +103,11 @@ def contribution_streaks(daily: pd.DataFrame, year: int | None = None) -> dict[s
     }
 
 
-def summary(commits: pd.DataFrame, files: pd.DataFrame, loc: pd.DataFrame) -> dict[str, Any]:
-    """Return headline metrics while excluding merge churn from totals."""
+def summary(commits: pd.DataFrame, files: pd.DataFrame, loc: pd.DataFrame, timezone: str = "UTC") -> dict[str, Any]:
+    """Return headline metrics in local time while excluding merge churn."""
     ordinary = commits[~commits.is_merge.astype(bool)] if not commits.empty else commits
-    daily = commit_daily(commits)
+    daily = commit_daily(commits, timezone)
+    authored = pd.to_datetime(commits.author_date, utc=True).dt.tz_convert(timezone) if not commits.empty else None
     return {
         "commits": int(commits.sha.nunique()) if not commits.empty else 0,
         "contributors": int(commits.contributor.nunique()) if not commits.empty else 0,
@@ -122,8 +123,8 @@ def summary(commits: pd.DataFrame, files: pd.DataFrame, loc: pd.DataFrame) -> di
         "files": int(loc.path.nunique()) if not loc.empty else 0,
         "loc": int(loc.physical_loc.sum()) if not loc.empty else 0,
         "languages": int(loc.language.nunique()) if not loc.empty else 0,
-        "first_commit": str(commits.author_date.min().date()) if not commits.empty else "Unavailable",
-        "last_commit": str(commits.author_date.max().date()) if not commits.empty else "Unavailable",
+        "first_commit": str(authored.min().date()) if authored is not None else "Unavailable",
+        "last_commit": str(authored.max().date()) if authored is not None else "Unavailable",
         "average_daily_commits": float(daily.commits.mean()) if not daily.empty else 0.0,
     }
 
@@ -143,6 +144,7 @@ def export_all(
     loc: pd.DataFrame,
     metadata: list[dict[str, Any]],
     branding: Branding,
+    timezone: str = "UTC",
 ) -> list[Path]:
     """Write CSV, JSON, and HTML exports with escaped text and redacted paths."""
     csv_dir, json_dir, reports = (root / "exports" / name for name in ("csv", "json", "reports"))
@@ -155,7 +157,7 @@ def export_all(
         frame.to_csv(csv_path, index=False)
         frame.to_json(json_path, orient="records", date_format="iso", indent=2)
         written.extend([csv_path, json_path])
-    overall = summary(commits, files, loc)
+    overall = summary(commits, files, loc, timezone)
     report = reports / f"{branding.slug}-executive-summary.html"
     html = (
         f"<html><body><h1>{escape(branding.title)}</h1><h2>Local Git analysis</h2>"
