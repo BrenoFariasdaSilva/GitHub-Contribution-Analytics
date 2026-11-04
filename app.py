@@ -254,11 +254,7 @@ def all_figures(
         px.bar(languages, x="contributor", y="changes", color="language", barmode="stack"),
     )
     by_type = commits_data.groupby("commit_type", as_index=False).agg(commits=("sha", "nunique"))
-    by_hour = (
-        commits_data.assign(hour=commits_data.author_date.dt.hour, weekday=commits_data.author_date.dt.day_name())
-        .groupby(["weekday", "hour"], as_index=False)
-        .agg(commits=("sha", "nunique"))
-    )
+    by_hour = commit_timing(commits_data, TIMEZONE)
     monthly_repo = (
         commits_data.assign(month=period_strings(commits_data.author_date, "M"))
         .groupby(["month", "repo"], as_index=False)
@@ -624,11 +620,7 @@ elif page == "Contributors":
 elif page == "Git Commits":
     st.title("Git commits")
     by_type = filtered.groupby("commit_type", as_index=False).agg(commits=("sha", "nunique"))
-    by_hour = (
-        filtered.assign(hour=filtered.author_date.dt.hour, weekday=filtered.author_date.dt.day_name())
-        .groupby(["weekday", "hour"], as_index=False)
-        .agg(commits=("sha", "nunique"))
-    )
+    by_hour = commit_timing(filtered, TIMEZONE)
     chart(px.pie(by_type, names="commit_type", values="commits"), "Conventional commit types")
     chart(
         px.density_heatmap(by_hour, x="hour", y="weekday", z="commits", color_continuous_scale="Blues"),

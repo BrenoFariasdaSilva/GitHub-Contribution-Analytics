@@ -6,6 +6,7 @@ import pandas as pd
 
 from contribution_analytics.analytics import (
     activity_by_period,
+    commit_timing,
     contributor_ranking,
     localized_timestamps,
     repository_colors,
@@ -77,6 +78,13 @@ def test_calendar_year_uses_local_authored_date() -> None:
     """A UTC January commit appears in the previous local calendar year."""
     commits = pd.DataFrame({"author_date": pd.to_datetime(["2026-01-01T01:00:00Z"])})
     assert localized_timestamps(commits, "America/Sao_Paulo").dt.year.tolist() == [2025]
+
+
+def test_commit_heatmap_uses_local_weekday_and_hour() -> None:
+    """The timing heatmap places UTC-midnight commits in the local slot."""
+    commits = pd.DataFrame({"sha": ["a"], "author_date": pd.to_datetime(["2026-01-01T01:00:00Z"])})
+    timing = commit_timing(commits, "America/Sao_Paulo")
+    assert timing.loc[0, ["weekday", "hour", "commits"]].tolist() == ["Wednesday", 22, 1]
 
 
 def test_repository_comparison_handles_arbitrary_names() -> None:
