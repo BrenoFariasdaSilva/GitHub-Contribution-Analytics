@@ -23,6 +23,7 @@ from contribution_analytics.analytics import (
     repository_comparison,
 )
 from contribution_analytics.branding import resolve_branding
+from contribution_analytics.charts import contributor_rank_bar
 from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import load_data
 from contribution_analytics.metrics import (
@@ -497,7 +498,7 @@ elif page == "Contributor Insights":
         how="left",
     )
     chart(
-        px.bar(ranking.iloc[::-1], x="commits", y="contributor", orientation="h", color="repositories", text="commits"),
+        contributor_rank_bar(ranking, "repositories"),
         "Contributor commit distribution",
     )
     chart(
@@ -600,7 +601,7 @@ elif page == "Contributors":
         how="left",
     )
     chart(
-        px.bar(ranking.iloc[::-1], x="commits", y="contributor", orientation="h", color="active_days", text="commits"),
+        contributor_rank_bar(ranking, "active_days"),
         "Commit ranking",
     )
     chart(
