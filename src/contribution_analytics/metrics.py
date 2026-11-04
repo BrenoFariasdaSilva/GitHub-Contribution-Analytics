@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from html import escape
 from itertools import pairwise
 from pathlib import Path
@@ -112,7 +112,7 @@ def summary(commits: pd.DataFrame, files: pd.DataFrame, loc: pd.DataFrame, timez
         "commits": int(commits.sha.nunique()) if not commits.empty else 0,
         "contributors": int(commits.contributor.nunique()) if not commits.empty else 0,
         "active_contributors": int(
-            commits[commits.author_date >= commits.author_date.max() - pd.Timedelta(days=90)].contributor.nunique()
+            commits[commits.author_date >= commits.author_date.max() - timedelta(days=90)].contributor.nunique()
         )
         if not commits.empty
         else 0,

@@ -1,5 +1,6 @@
 """Tests for generic colors and timezone-aware analytics."""
 
+import warnings
 from datetime import date
 
 import pandas as pd
@@ -108,7 +109,9 @@ def test_summary_uses_local_first_last_and_average_day() -> None:
         }
     )
     loc = pd.DataFrame(columns=["path", "physical_loc", "language"])
-    result = summary(commits, pd.DataFrame(), loc, "America/Sao_Paulo")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        result = summary(commits, pd.DataFrame(), loc, "America/Sao_Paulo")
     assert (result["first_commit"], result["last_commit"], result["average_daily_commits"]) == (
         "2025-12-31",
         "2026-01-01",
