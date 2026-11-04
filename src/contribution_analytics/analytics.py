@@ -22,6 +22,11 @@ def localized_timestamps(commits: pd.DataFrame, timezone: str, column: str = "au
     return pd.to_datetime(commits[column], utc=True, errors="coerce").dt.tz_convert(ZoneInfo(timezone))
 
 
+def active_day_count(timestamps: pd.Series, timezone: str) -> int:
+    """Count distinct authored days in the configured timezone."""
+    return int(pd.to_datetime(timestamps, utc=True).dt.tz_convert(timezone).dt.date.nunique())
+
+
 def activity_by_period(commits: pd.DataFrame, timezone: str, frequency: str = "D") -> pd.DataFrame:
     """Aggregate commits, churn, and active contributors by configured local period."""
     columns = ["period", "commits", "additions", "deletions", "churn", "net_changes", "contributors"]

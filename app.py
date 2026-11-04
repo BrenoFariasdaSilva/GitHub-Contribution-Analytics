@@ -13,6 +13,7 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 from contribution_analytics.analytics import (
+    active_day_count,
     activity_by_period,
     commit_intervals,
     commit_timing,
@@ -231,7 +232,7 @@ def all_figures(
         additions=("additions", "sum"),
         deletions=("deletions", "sum"),
         files=("files_changed", "sum"),
-        active_days=("author_date", lambda x: x.dt.date.nunique()),
+        active_days=("author_date", lambda x: active_day_count(x, TIMEZONE)),
     )
     activity = (
         commits_data.assign(month=period_strings(commits_data.author_date, "M"))
@@ -592,7 +593,7 @@ elif page == "Contributors":
             additions=("additions", "sum"),
             deletions=("deletions", "sum"),
             files=("files_changed", "sum"),
-            active_days=("author_date", lambda x: x.dt.date.nunique()),
+            active_days=("author_date", lambda x: active_day_count(x, TIMEZONE)),
         ),
         on="contributor",
         how="left",

@@ -5,6 +5,7 @@ from datetime import date
 import pandas as pd
 
 from contribution_analytics.analytics import (
+    active_day_count,
     activity_by_period,
     commit_timing,
     contributor_ranking,
@@ -85,6 +86,13 @@ def test_commit_heatmap_uses_local_weekday_and_hour() -> None:
     commits = pd.DataFrame({"sha": ["a"], "author_date": pd.to_datetime(["2026-01-01T01:00:00Z"])})
     timing = commit_timing(commits, "America/Sao_Paulo")
     assert timing.loc[0, ["weekday", "hour", "commits"]].tolist() == ["Wednesday", 22, 1]
+
+
+def test_contributor_active_days_use_local_dates() -> None:
+    """Two UTC dates can be one contributor day in the configured timezone."""
+    timestamps = pd.to_datetime(["2026-01-01T01:00:00Z", "2025-12-31T23:00:00Z"])
+    assert active_day_count(pd.Series(timestamps), "America/Sao_Paulo") == 1
+    assert active_day_count(pd.Series(timestamps), "UTC") == 2
 
 
 def test_repository_comparison_handles_arbitrary_names() -> None:
