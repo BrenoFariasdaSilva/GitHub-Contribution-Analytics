@@ -31,6 +31,7 @@ from contribution_analytics.metrics import (
     initial_repositories,
     summary,
 )
+from contribution_analytics.privacy import public_metadata
 
 CONFIG = load_config(config_path(None, ROOT))
 TIMEZONE = str(CONFIG["timezone"])
@@ -771,7 +772,7 @@ else:
     st.title("Configuration / data sources")
     st.json(
         {
-            "repositories": metadata,
+            "repositories": public_metadata(metadata),
             "github": github_status(),
             "scope": "Local Git refs (--all), unique SHAs, ordinary-commit numstat churn; "
             "current LoC from Git-tracked files.",
