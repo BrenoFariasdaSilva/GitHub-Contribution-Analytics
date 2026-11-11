@@ -8,7 +8,7 @@
   
 ---
 
-GitHub Contribution Analytics is a local-first Streamlit dashboard for exploring contribution activity, source-code evolution, and Git history across any configured repositories. Analysis is strictly read-only: it never changes source repositories, rewrites Git history, or writes data to GitHub.
+GitHub Contribution Analytics is a local-first Streamlit dashboard for exploring contribution activity, source-code evolution, and Git history across configured repositories. User-supplied local repositories are read-only. URL-based repositories are cloned into a managed cache that the application refreshes; it never pushes or rewrites remote history.
 
 Use the dashboard to examine unique commits, contributors, activity calendars and streaks, additions, deletions, churn, languages, files, modules, and current lines of code. Interactive filters support repository, contributor, date-range, and bot selection, while CSV, JSON, HTML, PNG, and ZIP exports make it easy to share or retain the resulting analysis.
 
@@ -38,15 +38,34 @@ Use the dashboard to examine unique commits, contributors, activity calendars an
 
 ## Setup
 
-Clone the repository and create local configuration:
+Obtain the application repository and create local configuration:
 
 ```bash
 git clone https://github.com/BrenoFariasdaSilva/GitHub-Contribution-Analytics.git
 cd GitHub-Contribution-Analytics
-cp config/settings.example.yaml config/settings.yaml
+python3 scripts/project_setup.py config
 ```
 
-Edit `config/settings.yaml` with arbitrary repository names and paths, exact identity aliases, exclusions, timezone, bot patterns, and feature switches. This local file is ignored by Git. Display-name precedence is runtime `--display-name`, nonempty `CONTRIBUTION_ANALYTICS_DISPLAY_NAME`, nonempty YAML `display_name`, Git origin, then the application directory. All calendar metrics use the validated `timezone` setting.
+If Git is not installed yet, download the application archive first; the setup helper can then offer to install Git. On Windows, use `py -3 scripts/project_setup.py config` instead of the `python3` command above.
+
+Edit `config/settings.yaml` with repository names and exactly one `path` or `url` per entry. For example, local and remote sources can be mixed:
+
+```yaml
+repositories:
+  local-project:
+    path: /home/user/projects/local-project
+  backend:
+    url: https://github.com/OWNER/backend.git
+    github: OWNER/backend
+  frontend:
+    url: https://github.com/OWNER/frontend.git
+  private-project:
+    url: git@github.com:OWNER/private-project.git
+```
+
+HTTPS URLs may omit `.git`; `ssh://` and `file://` URLs are also accepted. The optional `github` field remains metadata and is never used as a clone source. Names, aliases, exclusions, timezone, bot patterns, `github_enabled`, and `ownership_enabled` retain their existing behavior. This local settings file is ignored by Git. Display-name precedence is runtime `--display-name`, nonempty `CONTRIBUTION_ANALYTICS_DISPLAY_NAME`, nonempty YAML `display_name`, Git origin, then the application directory. All calendar metrics use the validated `timezone` setting.
+
+URL sources need no manual clone. The application creates full-history working clones under `data/repositories/` using a safe name and a source hash. It reuses them on later runs, fetches remote branches, and checks out the remote's current default branch in the **managed** working tree before measuring current LoC. `git log --all` still covers available branch and tag history. If refresh fails after a successful clone, analysis uses the last cached revision and prints a **stale cached data** warning; an uncached source cannot be analyzed offline. A damaged or mismatched cache is reported and left untouched for manual removal.
 
 The distribution is `github-contribution-analytics`; Python integrations import the generic package namespace:
 
@@ -58,20 +77,27 @@ from contribution_analytics.metrics import summary
 ## Requirements
 
 - Python 3.12 or later
-- Git
-- One or more local Git repositories to analyze
+- Git (the setup helper can offer to install it)
+- GNU Make for `make` commands; Windows users can use a GNU Make distribution or the direct Python commands below
+- One or more configured local paths or remote URLs
 
 ## Install and run
 
-The quickest path creates a virtual environment, installs dependencies, refreshes local Git analysis and exports, then starts the dashboard:
+`make run` checks Git, offers installation if missing, creates a virtual environment, installs Python dependencies, resolves repositories, analyzes them, generates exports, then starts Streamlit:
 
 ```bash
 make run
 ```
 
-Or run the steps directly:
+Git setup is transparent: the helper prints the selected command and asks for approval before installing. Set `AUTO_INSTALL_GIT=0` to disable it, or set `GIT_INSTALL_APPROVED=1` after reviewing the proposed command for noninteractive use. `make check-git` only checks; `make ensure-git` and `make install-git` offer installation. Linux supports available `apt-get`, `dnf`, `yum`, `pacman`, or `zypper` (with `sudo` when needed). macOS prefers Homebrew and falls back to Apple's Command Line Tools dialog. Windows supports `winget`, Chocolatey, or Scoop; Chocolatey needs an administrator terminal. Installer failures and an unusable Git after installation are reported. On Windows, a terminal restart may be needed for PATH changes.
+
+Python 3.12+ and Make must already be installed for `make run`; the helper does not install them. On native Windows, install GNU Make separately and use the Python launcher (`py -3`), or override `PYTHON` when invoking Make. The Makefile selects `.venv/Scripts/python.exe` on Windows and `.venv/bin/python` on macOS/Linux. It uses Python for copying configuration and cleaning tool caches.
+
+Or run the steps directly on macOS/Linux:
 
 ```bash
+python3 scripts/project_setup.py ensure-git
+python3 scripts/project_setup.py config
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python main.py diagnostics
@@ -80,13 +106,15 @@ python3 -m venv .venv
 .venv/bin/python -m streamlit run app.py
 ```
 
+On Windows, use `py -3` for the setup commands and `.venv\Scripts\python.exe` for the remaining commands. If Git is already installed, `python scripts/project_setup.py check-git` verifies it without attempting installation.
+
 PNG export uses Plotly with Kaleido 1.x and requires a locally installed Google Chrome or Chromium browser. The application reports export failures instead of generating invalid downloads.
 
 ## Commands
 
-- `python main.py [--config PATH] analyze --repo all|CONFIGURED_NAME` — extract deduplicated Git history and current tracked-file LoC for any configured repository.
+- `python main.py [--config PATH] analyze --repo all|CONFIGURED_NAME` — clone or refresh selected URL sources, then extract deduplicated history and current tracked-file LoC; partial runs retain cached analytics for unselected repositories.
 - `python main.py export --all` — write CSV, JSON, and HTML reports under `exports/`.
-- `python main.py diagnostics` — validate configured repositories and GitHub availability.
+- `python main.py diagnostics` — inspect local repositories and managed cache states without network access; add `--refresh` to clone or fetch remote sources and report refresh, offline, or authentication status.
 - `python main.py test` — run the test suite.
 - `make lint` — run Ruff.
 
@@ -109,7 +137,7 @@ Every chart has a high-resolution PNG download option. **Prepare all PNG assets 
 
 ## Privacy and GitHub API
 
-Git commands are read-only, generated data stays in this project, and no tokens are stored or printed. Git-only analysis works fully offline. Local settings, caches, and generated CSV/JSON/HTML/PNG files are ignored. Public JSON metadata excludes absolute local repository paths, and report text is HTML-escaped.
+Local path sources are read-only. Managed URL clones may be fetched and checked out, but no remote is pushed or modified. Public repositories require no GitHub login. Private sources use your existing SSH keys, SSH agent, or Git credential helper; credentials in configured HTTPS URLs are rejected, and Git failure output does not echo URLs or credentials. Existing Git authentication and TLS/SSH verification remain in force. Generated data stays in this project, and local settings, caches, and generated CSV/JSON/HTML/PNG files are ignored. Git-only analysis works offline for local sources and previously cached remotes, with stale remote data explicitly reported. Public JSON metadata excludes absolute local repository paths, and report text is HTML-escaped.
 
 Private-repository PR, issue, review, and lifecycle metrics require a valid GitHub CLI session:
 
@@ -121,7 +149,7 @@ If authentication or collection is unavailable, those metrics are shown as unava
 
 ## Limitations
 
-History is collected in bulk with one `git log` call per repository and cached in `data/processed`. Current LoC skips binary and unreadable tracked files. Rename detection is limited to Git's `numstat` output. Branch lifetime, GitHub reviews, issues, PRs, and blame ownership are never inferred when their data is absent. Shallow repositories are flagged in metadata.
+History is collected in bulk with one `git log` call per repository and cached in `data/processed`. Managed clones use full history; existing shallow local repositories are flagged in metadata. Current LoC skips binary, unreadable, and symlinked tracked files. Rename detection is limited to Git's `numstat` output. Branch lifetime, GitHub reviews, issues, PRs, and blame ownership are never inferred when their data is absent. Automatic Git installation depends on an available supported package manager and user approval; Python and Make are separate prerequisites.
 
 ## Development verifications
 
