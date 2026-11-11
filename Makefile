@@ -1,36 +1,46 @@
-PYTHON := .venv/bin/python
-PIP := .venv/bin/pip
-STREAMLIT := .venv/bin/python -m streamlit
+ifeq ($(OS),Windows_NT)
+PYTHON ?= py -3
+VENV_PYTHON := .venv/Scripts/python.exe
+else
+PYTHON ?= python3
+VENV_PYTHON := .venv/bin/python
+endif
 
-.PHONY: venv install analyze export test lint run diagnostics clean
+.PHONY: check-git install-git ensure-git venv install analyze export test lint run diagnostics clean
+
+check-git:
+	$(PYTHON) scripts/project_setup.py check-git
+
+install-git ensure-git:
+	$(PYTHON) scripts/project_setup.py ensure-git
 
 venv:
-	python3 -m venv .venv
+	$(PYTHON) -m venv .venv
 
 config/settings.yaml: config/settings.example.yaml
-	cp $< $@
+	$(PYTHON) scripts/project_setup.py config
 
-install: venv config/settings.yaml
-	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements.txt
+install: ensure-git venv config/settings.yaml
+	$(VENV_PYTHON) -m pip install --upgrade pip
+	$(VENV_PYTHON) -m pip install -r requirements.txt
 
 analyze: install
-	$(PYTHON) main.py analyze --repo all
+	$(PYTHON) scripts/project_setup.py run $(VENV_PYTHON) main.py analyze --repo all
 
 export: analyze
-	$(PYTHON) main.py export --all
+	$(PYTHON) scripts/project_setup.py run $(VENV_PYTHON) main.py export --all
 
 test: install
-	$(PYTHON) -m pytest -q
+	$(PYTHON) scripts/project_setup.py run $(VENV_PYTHON) -m pytest -q
 
 lint: install
-	$(PYTHON) -m ruff check .
+	$(PYTHON) scripts/project_setup.py run $(VENV_PYTHON) -m ruff check .
 
 run: export
-	$(STREAMLIT) run app.py
+	$(PYTHON) scripts/project_setup.py run $(VENV_PYTHON) -m streamlit run app.py
 
 diagnostics: install
-	$(PYTHON) main.py diagnostics
+	$(PYTHON) scripts/project_setup.py run $(VENV_PYTHON) main.py diagnostics
 
 clean:
-	rm -rf .pytest_cache .ruff_cache
+	$(PYTHON) scripts/project_setup.py clean
