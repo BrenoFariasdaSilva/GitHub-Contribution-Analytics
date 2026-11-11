@@ -94,7 +94,7 @@ PNG export uses Plotly with Kaleido 1.x and requires a locally installed Google 
 
 Pages cover repository activity, contributor insights, code evolution, commit patterns, a project-derived contribution calendar, current LoC and historical churn, repository comparison, languages, files/modules, collaboration, historical trends, exports, and source configuration. Charts can be filtered by repository, contributor, date range, and bot inclusion; repository colors are stable and derived from each configured name.
 
-Every chart has a high-resolution PNG download option. **Prepare all PNG assets (ZIP)** renders and packages the available local-data charts for the selected filters.
+Every chart has a high-resolution PNG download option. **Prepare all PNG assets (ZIP)** renders and packages the available local-data charts for the selected filters. Charts and PNGs use the active light or dark theme with the same explicit colors; repository colors and chart-specific scales remain intact.
 
 ## Metric definitions
 
