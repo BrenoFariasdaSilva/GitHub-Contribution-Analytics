@@ -1,10 +1,16 @@
-# Copy to config/settings.yaml and replace placeholder paths for your machine.
+# Copy to config/settings.yaml and configure exactly one path or url per repository.
 # CONTRIBUTION_ANALYTICS_CONFIG selects an alternate settings file.
 # CONTRIBUTION_ANALYTICS_DISPLAY_NAME overrides the display name.
 repositories:
   example-project:
     path: /path/to/local/repository
     github: OWNER/REPOSITORY
+#  backend:
+#    url: https://github.com/OWNER/backend.git
+#  frontend:
+#    url: https://github.com/OWNER/frontend.git
+#  private-project:
+#    url: git@github.com:OWNER/private-project.git
 display_name: ""
 timezone: America/Sao_Paulo
 github_enabled: true
