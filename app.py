@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import re
 import sys
-from io import BytesIO
 from pathlib import Path
-from zipfile import ZIP_DEFLATED, ZipFile
 
 import pandas as pd
 import plotly.express as px
@@ -23,7 +21,13 @@ from contribution_analytics.analytics import (
     repository_comparison,
 )
 from contribution_analytics.branding import resolve_branding
-from contribution_analytics.charts import contributor_rank_bar
+from contribution_analytics.charts import (
+    configure_chart_colors,
+    contributor_rank_bar,
+    figures_zip,
+    png_bytes,
+    style_chart,
+)
 from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import load_data
 from contribution_analytics.metrics import (
@@ -148,10 +152,8 @@ color = repository_colors(available_repos)
 
 def chart(fig, title: str) -> None:
     """Render a chart and provide a safe PNG download when Kaleido is available."""
-    fig.update_layout(
-        title=title, template=plotly_theme(), margin={"l": 20, "r": 20, "t": 45, "b": 20}, legend_title_text=""
-    )
-    st.plotly_chart(fig, width="stretch")
+    style_chart(fig, title, plotly_theme())
+    st.plotly_chart(fig, width="stretch", theme=None)
     filename = f"{BRANDING.slug}-{re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')}.png"
     try:
         image = png_bytes(fig)
@@ -171,18 +173,12 @@ def plotly_theme() -> str:
     return "plotly_dark" if st.context.theme.type == "dark" else "plotly_white"
 
 
-def png_bytes(fig) -> bytes:
-    """Render a high-resolution PNG with a bounded height."""
-    height = max(1200, min(3200, 80 * len(fig.data) + 1000))
-    return fig.to_image(format="png", width=2400, height=height, scale=2)
+configure_chart_colors(plotly_theme())
 
 
 def add_figure(figures: list[tuple[str, object]], title: str, figure: object) -> None:
     """Apply common styling and retain a figure for ZIP export."""
-    figure.update_layout(
-        title=title, template=plotly_theme(), margin={"l": 20, "r": 20, "t": 45, "b": 20}, legend_title_text=""
-    )
-    figures.append((title, figure))
+    figures.append((title, style_chart(figure, title, plotly_theme())))
 
 
 def all_figures(
@@ -386,12 +382,7 @@ def all_figures(
 
 def build_assets_zip(commits_data: pd.DataFrame, files_data: pd.DataFrame, loc_data: pd.DataFrame) -> bytes:
     """Render the dashboard's local-data charts into a downloadable ZIP archive."""
-    output = BytesIO()
-    with ZipFile(output, "w", ZIP_DEFLATED) as archive:
-        for index, (title, figure) in enumerate(all_figures(commits_data, files_data, loc_data), start=1):
-            filename = f"{BRANDING.slug}-{index:02d}-{re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')}.png"
-            archive.writestr(filename, png_bytes(figure))
-    return output.getvalue()
+    return figures_zip(all_figures(commits_data, files_data, loc_data), BRANDING.slug)
 
 
 asset_scope = (
