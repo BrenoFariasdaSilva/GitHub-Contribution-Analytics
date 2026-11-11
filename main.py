@@ -15,6 +15,7 @@ from contribution_analytics.branding import resolve_branding
 from contribution_analytics.config import config_path, load_config
 from contribution_analytics.git import analyze_repo, current_loc, load_data, save_data
 from contribution_analytics.metrics import export_all, github_status
+from contribution_analytics.repositories import git_available, inspect_cache, resolve_remote
 
 
 def settings(args: argparse.Namespace) -> dict[str, object]:
@@ -34,11 +35,20 @@ def analyze(args: argparse.Namespace) -> None:
     selected = list(repositories) if args.repo == "all" else [args.repo]
     if unknown := set(selected) - set(repositories):
         raise ValueError(f"Unknown repository: {', '.join(sorted(unknown))}. Available: {', '.join(repositories)}")
+    if not git_available():
+        raise RuntimeError("Git executable missing; install Git or run make ensure-git")
     commits, files, loc, metadata = [], [], [], []
     for name in selected:
         item = repositories[name]
-        repository = Path(item["path"])
+        cache_status = None
+        if "url" in item:
+            repository, cache_status = resolve_remote(name, item["url"], ROOT / "data" / "repositories")
+            print(f"{name}: remote {cache_status}")
+        else:
+            repository = Path(item["path"])
         repo_commits, repo_files, meta = analyze_repo(name, repository, config)
+        if cache_status:
+            meta["cache_status"] = cache_status
         commits.append(repo_commits)
         files.append(repo_files)
         loc.append(current_loc(name, repository, config))
@@ -78,11 +88,26 @@ def export(args: argparse.Namespace) -> None:
 
 
 def diagnostics(args: argparse.Namespace) -> None:
-    """Report whether each configured repository is available locally."""
+    """Report local paths and remote cache state, optionally refreshing remotes."""
     config = settings(args)
+    if not git_available():
+        print("Git executable missing; install Git or run make ensure-git")
+        return
     for name, item in config["repositories"].items():
-        repository = Path(item["path"])
-        print(f"{name}: {'found' if (repository / '.git').exists() else 'missing'}")
+        if "url" in item:
+            if getattr(args, "refresh", False):
+                try:
+                    _, state = resolve_remote(name, item["url"], ROOT / "data" / "repositories")
+                except RuntimeError as error:
+                    state = str(error)
+            else:
+                _, state = inspect_cache(name, item["url"], ROOT / "data" / "repositories")
+            print(f"{name}: remote URL configured; {state}")
+        else:
+            repository = Path(item["path"])
+            print(
+                f"{name}: {'valid local repository' if (repository / '.git').exists() else 'missing local repository'}"
+            )
     print(f"GitHub: {github_status()['reason']}")
 
 
@@ -110,7 +135,9 @@ def main() -> None:
     export_parser = actions.add_parser("export", help="Create CSV, JSON, and HTML exports")
     export_parser.add_argument("--all", action="store_true", help="Export all available report formats")
     export_parser.set_defaults(func=export)
-    actions.add_parser("diagnostics", help="Validate configured repository paths").set_defaults(func=diagnostics)
+    diagnostics_parser = actions.add_parser("diagnostics", help="Inspect local repositories and remote caches")
+    diagnostics_parser.add_argument("--refresh", action="store_true", help="Clone or refresh remote caches")
+    diagnostics_parser.set_defaults(func=diagnostics)
     actions.add_parser("test", help="Run tests").set_defaults(func=tests)
     args = parser.parse_args()
     args.func(args)

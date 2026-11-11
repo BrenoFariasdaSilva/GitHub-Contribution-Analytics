@@ -178,6 +178,8 @@ def current_loc(name: str, repo: Path, config: dict[str, Any]) -> pd.DataFrame:
         if not raw_path or excluded(raw_path, config):
             continue
         path = repo / raw_path
+        if path.is_symlink():
+            continue
         try:
             content = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
